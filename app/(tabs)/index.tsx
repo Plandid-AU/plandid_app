@@ -73,12 +73,14 @@ export default function HomeScreen() {
           </View>
         }
         renderItem={({ item }) => (
-          <VendorCard
-            vendor={item}
-            onPress={() => handleVendorPress(item)}
-            onFavoritePress={handleFavoritePress}
-            isFavorited={favoriteVendors.includes(item.id)}
-          />
+          <View style={styles.cardContainer}>
+            <VendorCard
+              vendor={item}
+              onPress={() => handleVendorPress(item)}
+              onFavoritePress={handleFavoritePress}
+              isFavorited={favoriteVendors.includes(item.id)}
+            />
+          </View>
         )}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
@@ -118,5 +120,8 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     fontSize: 16,
     color: "#71727A",
+  },
+  cardContainer: {
+    paddingHorizontal: 16,
   },
 });

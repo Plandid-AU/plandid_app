@@ -3,11 +3,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import React, { useRef, useState } from "react";
 import {
   Dimensions,
+  FlatList,
   Image,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -16,7 +16,7 @@ import {
 import { Vendor } from "../types";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const CARD_WIDTH = SCREEN_WIDTH - 32;
+const CARD_WIDTH = SCREEN_WIDTH - 64;
 const IMAGE_HEIGHT = 323;
 
 interface VendorCardProps {
@@ -33,39 +33,38 @@ export const VendorCard: React.FC<VendorCardProps> = ({
   isFavorited = false,
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const scrollViewRef = useRef<ScrollView>(null);
+  const flatListRef = useRef<FlatList>(null);
 
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+  const handleMomentumScrollEnd = (
+    event: NativeSyntheticEvent<NativeScrollEvent>
+  ) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
     const index = Math.round(contentOffsetX / CARD_WIDTH);
     setCurrentImageIndex(index);
   };
 
   return (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={onPress}
-      activeOpacity={0.95}
-    >
+    <View style={styles.card}>
       {/* Image Section */}
       <View style={styles.imageContainer}>
-        <ScrollView
-          ref={scrollViewRef}
+        <FlatList
+          ref={flatListRef}
+          data={vendor.images}
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-        >
-          {vendor.images.map((image) => (
-            <Image
-              key={image.id}
-              source={{ uri: image.url }}
-              style={styles.image}
-              resizeMode="cover"
-            />
-          ))}
-        </ScrollView>
+          onMomentumScrollEnd={handleMomentumScrollEnd}
+          renderItem={({ item }) => (
+            <TouchableOpacity activeOpacity={1} onPress={onPress}>
+              <Image
+                source={{ uri: item.url }}
+                style={styles.image}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+          )}
+          keyExtractor={(item) => item.id}
+        />
 
         {/* Gradient Overlay */}
         <LinearGradient
@@ -113,7 +112,11 @@ export const VendorCard: React.FC<VendorCardProps> = ({
       </View>
 
       {/* Info Section */}
-      <View style={styles.infoContainer}>
+      <TouchableOpacity
+        style={styles.infoContainer}
+        onPress={onPress}
+        activeOpacity={0.95}
+      >
         <View style={styles.infoContent}>
           {/* Header Info */}
           <View style={styles.headerRow}>
@@ -151,8 +154,8 @@ export const VendorCard: React.FC<VendorCardProps> = ({
             )}
           </View>
         </View>
-      </View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 };
 
@@ -163,7 +166,15 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#D9D9D9",
+    borderColor: "#E5E5E5",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   imageContainer: {
     height: IMAGE_HEIGHT,
