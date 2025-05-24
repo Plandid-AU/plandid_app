@@ -1,75 +1,122 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { router } from "expo-router";
+import React, { useMemo, useState } from "react";
+import {
+  FlatList,
+  Platform,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { CategoryTabs } from "@/components/CategoryTabs";
+import { SearchBar } from "@/components/SearchBar";
+import { VendorCard } from "@/components/VendorCard";
+import { mockUser, mockVendors } from "@/data/mockData";
+import { Vendor, VendorCategory } from "@/types";
 
 export default function HomeScreen() {
+  const [selectedCategory, setSelectedCategory] = useState<VendorCategory>(
+    VendorCategory.PHOTO
+  );
+  const [favoriteVendors, setFavoriteVendors] = useState<string[]>(
+    mockUser.favoriteVendors
+  );
+
+  // Filter vendors by selected category
+  const filteredVendors = useMemo(() => {
+    return mockVendors.filter((vendor) => vendor.category === selectedCategory);
+  }, [selectedCategory]);
+
+  const handleSearchPress = () => {
+    // Navigate to search page (not implemented yet)
+    console.log("Search pressed");
+  };
+
+  const handleVendorPress = (vendor: Vendor) => {
+    // Navigate to vendor details
+    router.push({
+      pathname: "/vendor/[id]",
+      params: { id: vendor.id },
+    });
+  };
+
+  const handleFavoritePress = (vendorId: string) => {
+    setFavoriteVendors((prev) => {
+      if (prev.includes(vendorId)) {
+        return prev.filter((id) => id !== vendorId);
+      }
+      return [...prev, vendorId];
+    });
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+
+      <FlatList
+        data={filteredVendors}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            {/* Search Bar */}
+            <SearchBar onPress={handleSearchPress} />
+
+            {/* Category Tabs */}
+            <CategoryTabs
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+            />
+          </View>
+        }
+        renderItem={({ item }) => (
+          <VendorCard
+            vendor={item}
+            onPress={() => handleVendorPress(item)}
+            onFavoritePress={handleFavoritePress}
+            isFavorited={favoriteVendors.includes(item.id)}
+          />
+        )}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>
+              No vendors found in this category
+            </Text>
+          </View>
+        }
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  scrollContent: {
+    paddingBottom: 20,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  header: {
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 12,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 100,
+  },
+  emptyText: {
+    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
+    fontWeight: "500",
+    fontSize: 16,
+    color: "#71727A",
   },
 });
