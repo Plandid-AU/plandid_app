@@ -5,6 +5,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Dimensions,
   Image,
@@ -31,6 +32,12 @@ export default function VendorDetailsScreen() {
   const [isFavorited, setIsFavorited] = useState(false);
   const [expandedReviews, setExpandedReviews] = useState<string[]>([]);
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [imageLoadingStates, setImageLoadingStates] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [imageErrorStates, setImageErrorStates] = useState<{
+    [key: string]: boolean;
+  }>({});
 
   if (!vendor) {
     return null;
@@ -65,6 +72,72 @@ export default function VendorDetailsScreen() {
     );
   };
 
+  const handleImageLoadStart = (imageId: string) => {
+    setImageLoadingStates((prev) => ({ ...prev, [imageId]: true }));
+    setImageErrorStates((prev) => ({ ...prev, [imageId]: false }));
+  };
+
+  const handleImageLoad = (imageId: string) => {
+    setImageLoadingStates((prev) => ({ ...prev, [imageId]: false }));
+  };
+
+  const handleImageError = (imageId: string) => {
+    console.log(`Failed to load image: ${imageId}`);
+    setImageLoadingStates((prev) => ({ ...prev, [imageId]: false }));
+    setImageErrorStates((prev) => ({ ...prev, [imageId]: true }));
+  };
+
+  const renderImageWithFallback = (
+    image: any,
+    style: any,
+    imageId?: string
+  ) => {
+    const id = imageId || image.id;
+    const isLoading = imageLoadingStates[id];
+    const hasError = imageErrorStates[id];
+
+    if (hasError) {
+      return (
+        <View style={[style, styles.errorContainer]}>
+          <Ionicons name="image-outline" size={50} color="#999" />
+          <Text style={styles.errorText}>Image failed to load</Text>
+          {isLoading && (
+            <View style={styles.loadingOverlay}>
+              <ActivityIndicator size="large" color="#7B1513" />
+            </View>
+          )}
+        </View>
+      );
+    }
+
+    return (
+      <View style={{ position: "relative" }}>
+        <Image
+          key={`${id}_${image.url || image.imageUrl}`}
+          source={{
+            uri: image.url || image.imageUrl,
+            cache: "reload",
+          }}
+          style={style}
+          resizeMode="cover"
+          onLoadStart={() => handleImageLoadStart(id)}
+          onLoad={() => handleImageLoad(id)}
+          onError={() => handleImageError(id)}
+        />
+        {isLoading && (
+          <View
+            style={[
+              styles.loadingOverlay,
+              { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
+            ]}
+          >
+            <ActivityIndicator size="large" color="#7B1513" />
+          </View>
+        )}
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
@@ -79,14 +152,9 @@ export default function VendorDetailsScreen() {
             onScroll={handleScroll}
             scrollEventThrottle={16}
           >
-            {vendor.images.map((image) => (
-              <Image
-                key={image.id}
-                source={{ uri: image.url }}
-                style={styles.headerImage}
-                resizeMode="cover"
-              />
-            ))}
+            {vendor.images.map((image) =>
+              renderImageWithFallback(image, styles.headerImage, image.id)
+            )}
           </ScrollView>
 
           {/* Gradient Overlay */}
@@ -188,10 +256,7 @@ export default function VendorDetailsScreen() {
 
             {vendor.styles.map((style) => (
               <TouchableOpacity key={style.id} style={styles.styleCard}>
-                <Image
-                  source={{ uri: style.imageUrl }}
-                  style={styles.styleImage}
-                />
+                {renderImageWithFallback(style, styles.styleImage, style.id)}
                 <View style={styles.styleInfo}>
                   <Text style={styles.styleTitle}>{style.name}</Text>
                   <Text style={styles.styleDescription}>
@@ -213,10 +278,11 @@ export default function VendorDetailsScreen() {
             </View>
 
             <View style={styles.portfolioCard}>
-              <Image
-                source={{ uri: vendor.images[0]?.url }}
-                style={styles.portfolioImage}
-              />
+              {renderImageWithFallback(
+                vendor.images[0],
+                styles.portfolioImage,
+                `portfolio_${vendor.images[0]?.id}`
+              )}
               <View style={styles.portfolioInfo}>
                 <Text style={styles.portfolioTitle}>{vendor.name}</Text>
                 <Text style={styles.portfolioTagline}>{vendor.tagline}</Text>
@@ -299,12 +365,12 @@ export default function VendorDetailsScreen() {
                       ))}
                     </View>
                   </View>
-                  {review.userImage && (
-                    <Image
-                      source={{ uri: review.userImage }}
-                      style={styles.reviewUserImage}
-                    />
-                  )}
+                  {review.userImage &&
+                    renderImageWithFallback(
+                      { url: review.userImage },
+                      styles.reviewUserImage,
+                      `review_${review.id}`
+                    )}
                 </View>
 
                 <Text
@@ -372,6 +438,22 @@ const styles = StyleSheet.create({
   headerImage: {
     width: SCREEN_WIDTH,
     height: IMAGE_HEIGHT,
+  },
+  errorContainer: {
+    backgroundColor: "#f5f5f5",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    color: "#999",
+    fontSize: 12,
+    marginTop: 8,
+    textAlign: "center",
+  },
+  loadingOverlay: {
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
   },
   gradient: {
     position: "absolute",

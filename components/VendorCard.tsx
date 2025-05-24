@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Dimensions,
   FlatList,
   Image,
@@ -16,7 +17,8 @@ import {
 import { Vendor } from "../types";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const CARD_WIDTH = SCREEN_WIDTH - 64;
+const CARD_MARGIN = 32; // Total horizontal margin (16px on each side)
+const CARD_WIDTH = SCREEN_WIDTH - CARD_MARGIN;
 const IMAGE_HEIGHT = 323;
 
 interface VendorCardProps {
@@ -33,15 +35,101 @@ export const VendorCard: React.FC<VendorCardProps> = ({
   isFavorited = false,
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [imageLoadingStates, setImageLoadingStates] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [imageErrorStates, setImageErrorStates] = useState<{
+    [key: string]: boolean;
+  }>({});
   const flatListRef = useRef<FlatList>(null);
 
-  const handleMomentumScrollEnd = (
-    event: NativeSyntheticEvent<NativeScrollEvent>
-  ) => {
-    const contentOffsetX = event.nativeEvent.contentOffset.x;
-    const index = Math.round(contentOffsetX / CARD_WIDTH);
-    setCurrentImageIndex(index);
+  // More responsive scroll handling with both onScroll and onMomentumScrollEnd
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const contentOffsetX = event.nativeEvent.contentOffset.x;
+      const index = Math.round(contentOffsetX / CARD_WIDTH);
+      const clampedIndex = Math.max(
+        0,
+        Math.min(index, vendor.images.length - 1)
+      );
+
+      if (clampedIndex !== currentImageIndex) {
+        setCurrentImageIndex(clampedIndex);
+      }
+    },
+    [currentImageIndex, vendor.images.length]
+  );
+
+  const handleMomentumScrollEnd = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const contentOffsetX = event.nativeEvent.contentOffset.x;
+      const index = Math.round(contentOffsetX / CARD_WIDTH);
+      const clampedIndex = Math.max(
+        0,
+        Math.min(index, vendor.images.length - 1)
+      );
+      setCurrentImageIndex(clampedIndex);
+    },
+    [vendor.images.length]
+  );
+
+  const handleImageLoadStart = (imageId: string) => {
+    setImageLoadingStates((prev) => ({ ...prev, [imageId]: true }));
+    setImageErrorStates((prev) => ({ ...prev, [imageId]: false }));
   };
+
+  const handleImageLoad = (imageId: string) => {
+    setImageLoadingStates((prev) => ({ ...prev, [imageId]: false }));
+  };
+
+  const handleImageError = (imageId: string) => {
+    console.log(`Failed to load image: ${imageId}`);
+    setImageLoadingStates((prev) => ({ ...prev, [imageId]: false }));
+    setImageErrorStates((prev) => ({ ...prev, [imageId]: true }));
+  };
+
+  const renderImageWithFallback = useCallback(
+    ({ item }: { item: any }) => {
+      const isLoading = imageLoadingStates[item.id];
+      const hasError = imageErrorStates[item.id];
+
+      return (
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={onPress}
+          style={styles.imageItem}
+        >
+          <View style={styles.imageWrapper}>
+            {!hasError ? (
+              <Image
+                key={`${item.id}_${item.url}`}
+                source={{
+                  uri: item.url,
+                  cache: "reload",
+                }}
+                style={styles.image}
+                resizeMode="cover"
+                onLoadStart={() => handleImageLoadStart(item.id)}
+                onLoad={() => handleImageLoad(item.id)}
+                onError={() => handleImageError(item.id)}
+              />
+            ) : (
+              <View style={[styles.image, styles.errorContainer]}>
+                <Ionicons name="image-outline" size={50} color="#999" />
+                <Text style={styles.errorText}>Image failed to load</Text>
+              </View>
+            )}
+            {isLoading && (
+              <View style={styles.loadingOverlay}>
+                <ActivityIndicator size="large" color="#7B1513" />
+              </View>
+            )}
+          </View>
+        </TouchableOpacity>
+      );
+    },
+    [imageLoadingStates, imageErrorStates, onPress]
+  );
 
   return (
     <View style={styles.card}>
@@ -53,17 +141,20 @@ export const VendorCard: React.FC<VendorCardProps> = ({
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
+          bounces={false}
+          scrollEventThrottle={16}
+          decelerationRate="fast"
+          snapToInterval={CARD_WIDTH}
+          snapToAlignment="start"
+          onScroll={handleScroll}
           onMomentumScrollEnd={handleMomentumScrollEnd}
-          renderItem={({ item }) => (
-            <TouchableOpacity activeOpacity={1} onPress={onPress}>
-              <Image
-                source={{ uri: item.url }}
-                style={styles.image}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-          )}
+          renderItem={renderImageWithFallback}
           keyExtractor={(item) => item.id}
+          getItemLayout={(_, index) => ({
+            length: CARD_WIDTH,
+            offset: CARD_WIDTH * index,
+            index,
+          })}
         />
 
         {/* Gradient Overlay */}
@@ -102,8 +193,6 @@ export const VendorCard: React.FC<VendorCardProps> = ({
                   index === currentImageIndex
                     ? styles.paginationDotActive
                     : styles.paginationDotInactive,
-                  index === 3 && styles.paginationDotSmall,
-                  index === 4 && styles.paginationDotExtraSmall,
                 ]}
               />
             ))}
@@ -180,9 +269,36 @@ const styles = StyleSheet.create({
     height: IMAGE_HEIGHT,
     position: "relative",
   },
+  imageItem: {
+    width: CARD_WIDTH,
+  },
+  imageWrapper: {
+    position: "relative",
+  },
   image: {
     width: CARD_WIDTH,
     height: IMAGE_HEIGHT,
+  },
+  errorContainer: {
+    backgroundColor: "#f5f5f5",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    color: "#999",
+    fontSize: 12,
+    marginTop: 8,
+    textAlign: "center",
+  },
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
   },
   gradient: {
     position: "absolute",
@@ -229,14 +345,6 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     backgroundColor: "#DDDDDD",
-  },
-  paginationDotSmall: {
-    width: 5,
-    height: 5,
-  },
-  paginationDotExtraSmall: {
-    width: 4,
-    height: 4,
   },
   infoContainer: {
     padding: 12,
