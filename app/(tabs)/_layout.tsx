@@ -1,3 +1,4 @@
+import { getLineHeight, rf, rh, rs } from "@/constants/Responsive";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
@@ -13,19 +14,19 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: "#FFFFFF",
           borderTopWidth: 0,
-          paddingTop: 16,
-          paddingBottom: 42,
-          height: 102,
+          paddingTop: rs(16),
+          paddingBottom: rs(42),
+          height: rh(102),
         },
         tabBarLabelStyle: {
           fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-          fontSize: 10,
-          lineHeight: 14,
+          fontSize: rf(10),
+          lineHeight: getLineHeight(rf(10), 1.4),
           letterSpacing: 0.15,
-          marginTop: 8,
+          marginTop: rs(8),
         },
         tabBarIconStyle: {
-          marginBottom: -4,
+          marginBottom: rs(-4),
         },
       }}
     >
@@ -36,7 +37,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "search" : "search-outline"}
-              size={20}
+              size={rf(20)}
               color={color}
             />
           ),
@@ -49,7 +50,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "heart" : "heart-outline"}
-              size={20}
+              size={rf(20)}
               color={color}
             />
           ),
@@ -62,7 +63,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "chatbubble" : "chatbubble-outline"}
-              size={20}
+              size={rf(20)}
               color={color}
             />
           ),
@@ -75,7 +76,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "person" : "person-outline"}
-              size={20}
+              size={rf(20)}
               color={color}
             />
           ),

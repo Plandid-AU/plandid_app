@@ -1,3 +1,4 @@
+import { getLineHeight, rf, rs } from "@/constants/Responsive";
 import React from "react";
 import { Platform, SafeAreaView, StyleSheet, Text, View } from "react-native";
 
@@ -23,21 +24,21 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: rs(20),
   },
   title: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "800",
-    fontSize: 24,
-    lineHeight: 28.8,
+    fontSize: rf(24),
+    lineHeight: getLineHeight(rf(24), 1.2),
     color: "#000000",
-    marginBottom: 8,
+    marginBottom: rs(8),
   },
   subtitle: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "500",
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: rf(16),
+    lineHeight: getLineHeight(rf(16), 1.375),
     color: "#71727A",
     textAlign: "center",
   },

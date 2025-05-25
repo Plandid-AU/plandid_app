@@ -13,6 +13,7 @@ import {
 import { CategoryTabs } from "@/components/CategoryTabs";
 import { SearchBar } from "@/components/SearchBar";
 import { VendorCard } from "@/components/VendorCard";
+import { getLineHeight, rf, rs } from "@/constants/Responsive";
 import { mockUser, mockVendors } from "@/data/mockData";
 import { Vendor, VendorCategory } from "@/types";
 
@@ -100,28 +101,29 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: rs(20),
   },
   header: {
     alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 12,
+    gap: rs(12),
+    paddingHorizontal: rs(16),
+    paddingTop: rs(8),
+    paddingBottom: rs(12),
   },
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingVertical: 100,
+    paddingVertical: rs(100),
   },
   emptyText: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "500",
-    fontSize: 16,
+    fontSize: rf(16),
+    lineHeight: getLineHeight(rf(16), 1.2),
     color: "#71727A",
   },
   cardContainer: {
-    paddingHorizontal: 16,
+    paddingHorizontal: rs(16),
   },
 });

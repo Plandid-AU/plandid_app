@@ -1,3 +1,4 @@
+import { getLineHeight, rf, rh, rs } from "@/constants/Responsive";
 import { mockUser, mockVendors } from "@/data/mockData";
 import { Vendor } from "@/types";
 import { Ionicons } from "@expo/vector-icons";
@@ -12,7 +13,6 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
-  SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -22,7 +22,7 @@ import {
 } from "react-native";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const IMAGE_HEIGHT = 342;
+const IMAGE_HEIGHT = rh(342);
 
 export default function VendorDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -99,7 +99,7 @@ export default function VendorDetailsScreen() {
     if (hasError) {
       return (
         <View style={[style, styles.errorContainer]}>
-          <Ionicons name="image-outline" size={50} color="#999" />
+          <Ionicons name="image-outline" size={rf(50)} color="#999" />
           <Text style={styles.errorText}>Image failed to load</Text>
           {isLoading && (
             <View style={styles.loadingOverlay}>
@@ -139,7 +139,7 @@ export default function VendorDetailsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" />
 
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
@@ -170,7 +170,7 @@ export default function VendorDetailsScreen() {
               onPress={() => router.back()}
               style={styles.navButton}
             >
-              <Ionicons name="chevron-back" size={20} color="#7B1513" />
+              <Ionicons name="chevron-back" size={rf(20)} color="#7B1513" />
             </TouchableOpacity>
 
             <View style={styles.navRightButtons}>
@@ -180,12 +180,12 @@ export default function VendorDetailsScreen() {
               >
                 <Ionicons
                   name={isFavorited ? "heart" : "heart-outline"}
-                  size={22}
+                  size={rf(22)}
                   color="#FFFAFC"
                 />
               </TouchableOpacity>
               <TouchableOpacity style={styles.navButton}>
-                <Ionicons name="share-outline" size={24} color="#FFFFFF" />
+                <Ionicons name="share-outline" size={rf(24)} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
           </View>
@@ -218,7 +218,7 @@ export default function VendorDetailsScreen() {
             </Text>
 
             <View style={styles.ratingRow}>
-              <Ionicons name="star" size={12} color="#000000" />
+              <Ionicons name="star" size={rf(12)} color="#000000" />
               <Text style={styles.ratingText}>
                 {vendor.rating} • {vendor.reviewCount} Reviews
               </Text>
@@ -251,7 +251,7 @@ export default function VendorDetailsScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Explore my style</Text>
-              <Ionicons name="chevron-forward" size={10} color="#7B1513" />
+              <Ionicons name="chevron-forward" size={rf(14)} color="#7B1513" />
             </View>
 
             {vendor.styles.map((style) => (
@@ -263,7 +263,11 @@ export default function VendorDetailsScreen() {
                     {style.description}
                   </Text>
                 </View>
-                <Ionicons name="chevron-forward" size={14} color="#7B1513" />
+                <Ionicons
+                  name="chevron-forward"
+                  size={rf(14)}
+                  color="#7B1513"
+                />
               </TouchableOpacity>
             ))}
           </View>
@@ -274,7 +278,7 @@ export default function VendorDetailsScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>View Full Portfolio</Text>
-              <Ionicons name="chevron-forward" size={10} color="#7B1513" />
+              <Ionicons name="chevron-forward" size={rf(10)} color="#7B1513" />
             </View>
 
             <View style={styles.portfolioCard}>
@@ -307,7 +311,7 @@ export default function VendorDetailsScreen() {
               </Text>
               <Ionicons
                 name={showFullDescription ? "chevron-up" : "chevron-down"}
-                size={10}
+                size={rf(10)}
                 color="#7B1513"
               />
             </TouchableOpacity>
@@ -319,7 +323,7 @@ export default function VendorDetailsScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Delivery Time</Text>
             <View style={styles.deliveryRow}>
-              <Ionicons name="send" size={18} color="#7B1513" />
+              <Ionicons name="send" size={rf(18)} color="#7B1513" />
               <Text style={styles.deliveryText}>{vendor.deliveryTime}</Text>
             </View>
           </View>
@@ -343,7 +347,7 @@ export default function VendorDetailsScreen() {
           {/* Reviews Section */}
           <View style={styles.section}>
             <View style={styles.reviewsHeader}>
-              <Ionicons name="star" size={16} color="#000000" />
+              <Ionicons name="star" size={rf(16)} color="#000000" />
               <Text style={styles.reviewsTitle}>
                 {vendor.rating} • {vendor.reviewCount} Reviews
               </Text>
@@ -359,7 +363,7 @@ export default function VendorDetailsScreen() {
                         <Ionicons
                           key={i}
                           name="star"
-                          size={12}
+                          size={rf(12)}
                           color="#000000"
                         />
                       ))}
@@ -397,7 +401,7 @@ export default function VendorDetailsScreen() {
                         ? "chevron-up"
                         : "chevron-down"
                     }
-                    size={10}
+                    size={rf(10)}
                     color="#7B1513"
                   />
                 </TouchableOpacity>
@@ -422,7 +426,7 @@ export default function VendorDetailsScreen() {
           <Text style={styles.ctaButtonPrimaryText}>Message</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -446,8 +450,8 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: "#999",
-    fontSize: 12,
-    marginTop: 8,
+    fontSize: rf(12),
+    marginTop: rs(8),
     textAlign: "center",
   },
   loadingOverlay: {
@@ -464,37 +468,37 @@ const styles = StyleSheet.create({
   },
   navBar: {
     position: "absolute",
-    top: 32,
+    top: StatusBar.currentHeight || (Platform.OS === "ios" ? rh(44) : 0),
     left: 0,
     right: 0,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 24,
-    height: 56,
+    paddingHorizontal: rs(24),
+    height: rh(56),
   },
   navButton: {
-    width: 40,
-    height: 40,
+    width: rs(40),
+    height: rs(40),
     justifyContent: "center",
     alignItems: "center",
   },
   navRightButtons: {
     flexDirection: "row",
-    gap: 10,
+    gap: rs(10),
   },
   pagination: {
     position: "absolute",
-    bottom: 18,
+    bottom: rs(18),
     alignSelf: "center",
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: rs(6),
   },
   paginationDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: rs(6),
+    height: rs(6),
+    borderRadius: rs(3),
   },
   paginationDotActive: {
     backgroundColor: "#FFFFFF",
@@ -506,14 +510,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   section: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingHorizontal: rs(24),
+    paddingVertical: rs(12),
   },
   vendorName: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "800",
-    fontSize: 24,
-    lineHeight: 28.8,
+    fontSize: rf(24),
+    lineHeight: getLineHeight(rf(24), 1.2),
     letterSpacing: 0.24,
     color: "#000000",
     textAlign: "center",
@@ -521,8 +525,8 @@ const styles = StyleSheet.create({
   vendorSubtitle: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "500",
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: rf(12),
+    lineHeight: getLineHeight(rf(12), 1.33),
     letterSpacing: 0.12,
     color: "#A0A0A0",
     textAlign: "center",
@@ -531,14 +535,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    gap: 4,
-    marginTop: 4,
+    gap: rs(4),
+    marginTop: rs(4),
   },
   ratingText: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "500",
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: rf(14),
+    lineHeight: getLineHeight(rf(14), 1.43),
     color: "#252525",
   },
   divider: {
@@ -548,39 +552,39 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "700",
-    fontSize: 12,
-    lineHeight: 14.4,
+    fontSize: rf(12),
+    lineHeight: getLineHeight(rf(12), 1.2),
     color: "#000000",
     textAlign: "center",
   },
   availabilityText: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "500",
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: rf(12),
+    lineHeight: getLineHeight(rf(12), 1.33),
     letterSpacing: 0.12,
     color: "#000000",
     textAlign: "center",
-    marginTop: 4,
+    marginTop: rs(4),
   },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    gap: 4,
-    marginBottom: 10,
+    gap: rs(4),
+    marginBottom: rs(10),
   },
   styleCard: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    paddingVertical: 9,
-    paddingHorizontal: 12,
+    gap: rs(10),
+    paddingVertical: rs(9),
+    paddingHorizontal: rs(12),
   },
   styleImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
+    width: rs(48),
+    height: rs(48),
+    borderRadius: rs(8),
     backgroundColor: "#D9D9D9",
   },
   styleInfo: {
@@ -589,29 +593,29 @@ const styles = StyleSheet.create({
   styleTitle: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "700",
-    fontSize: 12,
-    lineHeight: 14.4,
+    fontSize: rf(12),
+    lineHeight: getLineHeight(rf(12), 1.2),
     color: "#000000",
   },
   styleDescription: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "500",
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: rf(12),
+    lineHeight: getLineHeight(rf(12), 1.33),
     letterSpacing: 0.12,
     color: "#000000",
   },
   portfolioCard: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
-    paddingHorizontal: 8,
-    marginTop: 15,
+    gap: rs(16),
+    paddingHorizontal: rs(8),
+    marginTop: rs(15),
   },
   portfolioImage: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: rs(64),
+    height: rs(64),
+    borderRadius: rs(32),
     backgroundColor: "#D9D9D9",
   },
   portfolioInfo: {
@@ -620,27 +624,27 @@ const styles = StyleSheet.create({
   portfolioTitle: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "700",
-    fontSize: 12,
-    lineHeight: 14.4,
+    fontSize: rf(12),
+    lineHeight: getLineHeight(rf(12), 1.2),
     color: "#000000",
   },
   portfolioTagline: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "500",
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: rf(12),
+    lineHeight: getLineHeight(rf(12), 1.33),
     letterSpacing: 0.12,
     color: "#000000",
   },
   descriptionSection: {
-    paddingHorizontal: 28,
-    paddingVertical: 12,
+    paddingHorizontal: rs(28),
+    paddingVertical: rs(12),
   },
   descriptionText: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "500",
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: rf(12),
+    lineHeight: getLineHeight(rf(12), 1.33),
     letterSpacing: 0.12,
     color: "#000000",
   },
@@ -648,75 +652,75 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 4,
-    marginTop: 8,
+    gap: rs(4),
+    marginTop: rs(8),
   },
   showMoreText: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "700",
-    fontSize: 12,
-    lineHeight: 14.4,
+    fontSize: rf(12),
+    lineHeight: getLineHeight(rf(12), 1.2),
     color: "#000000",
   },
   deliveryRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    marginTop: 12,
-    paddingHorizontal: 8,
+    gap: rs(12),
+    marginTop: rs(12),
+    paddingHorizontal: rs(8),
   },
   deliveryText: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "500",
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: rf(12),
+    lineHeight: getLineHeight(rf(12), 1.33),
     letterSpacing: 0.12,
     color: "#000000",
   },
   tagsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
-    marginTop: 12,
+    gap: rs(12),
+    marginTop: rs(12),
   },
   tag: {
     backgroundColor: "#EBEBEB",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 12,
+    paddingVertical: rs(6),
+    paddingHorizontal: rs(12),
+    borderRadius: rs(12),
   },
   tagText: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "700",
-    fontSize: 12,
-    lineHeight: 14.4,
+    fontSize: rf(12),
+    lineHeight: getLineHeight(rf(12), 1.2),
     color: "#1F2024",
   },
   reviewsHeader: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
-    marginBottom: 12,
+    gap: rs(4),
+    marginBottom: rs(12),
   },
   reviewsTitle: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "800",
-    fontSize: 16,
-    lineHeight: 19.2,
+    fontSize: rf(16),
+    lineHeight: getLineHeight(rf(16), 1.2),
     letterSpacing: 0.08,
     color: "#252525",
   },
   reviewCard: {
     backgroundColor: "#EBEBEB",
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
+    padding: rs(16),
+    borderRadius: rs(16),
+    marginBottom: rs(12),
   },
   reviewHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 16,
+    marginBottom: rs(16),
   },
   reviewUserInfo: {
     flex: 1,
@@ -724,66 +728,66 @@ const styles = StyleSheet.create({
   reviewUserName: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "700",
-    fontSize: 14,
-    lineHeight: 16.8,
+    fontSize: rf(14),
+    lineHeight: getLineHeight(rf(14), 1.2),
     color: "#1F2024",
   },
   reviewStars: {
     flexDirection: "row",
-    gap: 1,
-    marginTop: 4,
+    gap: rs(1),
+    marginTop: rs(4),
   },
   reviewUserImage: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    width: rs(18),
+    height: rs(18),
+    borderRadius: rs(9),
   },
   reviewText: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "500",
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: rf(12),
+    lineHeight: getLineHeight(rf(12), 1.33),
     letterSpacing: 0.12,
     color: "#494A50",
   },
   ctaContainer: {
     flexDirection: "row",
-    gap: 14,
-    padding: 13,
-    paddingHorizontal: 24,
+    gap: rs(14),
+    padding: rs(13),
+    paddingHorizontal: rs(24),
     borderTopWidth: 1,
     borderTopColor: "#D9D9D9",
     backgroundColor: "#FFFFFF",
   },
   ctaButtonSecondary: {
     flex: 1,
-    height: 40,
+    height: rh(40),
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 12,
+    borderRadius: rs(12),
     borderWidth: 1.5,
     borderColor: "#7B1513",
   },
   ctaButtonSecondaryText: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "600",
-    fontSize: 12,
-    lineHeight: 14.5,
+    fontSize: rf(12),
+    lineHeight: getLineHeight(rf(12), 1.21),
     color: "#7B1513",
   },
   ctaButtonPrimary: {
     flex: 1,
-    height: 40,
+    height: rh(40),
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 12,
+    borderRadius: rs(12),
     backgroundColor: "#7B1513",
   },
   ctaButtonPrimaryText: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
     fontWeight: "600",
-    fontSize: 12,
-    lineHeight: 14.5,
+    fontSize: rf(12),
+    lineHeight: getLineHeight(rf(12), 1.21),
     color: "#FFFFFF",
   },
 });

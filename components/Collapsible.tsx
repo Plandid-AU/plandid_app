@@ -4,6 +4,7 @@ import { StyleSheet, TouchableOpacity } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { rf, rs } from "@/constants/Responsive";
 
 export function Collapsible({
   children,
@@ -20,7 +21,7 @@ export function Collapsible({
       >
         <IconSymbol
           name={isOpen ? "chevron.down" : "chevron.right"}
-          size={18}
+          size={rf(18)}
           weight="medium"
           color="#007AFF"
         />
@@ -35,11 +36,11 @@ const styles = StyleSheet.create({
   heading: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    paddingVertical: 10,
+    gap: rs(6),
+    paddingVertical: rs(10),
   },
   content: {
-    marginTop: 6,
-    marginLeft: 24,
+    marginTop: rs(6),
+    marginLeft: rs(24),
   },
 });
