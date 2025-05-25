@@ -24,6 +24,7 @@ export default function SearchResultsScreen() {
 
   const [favoriteVendors, setFavoriteVendors] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -88,6 +89,22 @@ export default function SearchResultsScreen() {
   }, [location, service]);
 
   const handleBack = () => {
+    if (isNavigating) return; // Prevent multiple taps
+
+    setIsNavigating(true);
+
+    // Navigate directly back to home with back animation
+    router.dismissTo("/(tabs)");
+  };
+
+  const handleSearchInfoPress = () => {
+    // Set the current search parameters in the store for modification
+    const { setLocation, setDate, setService } = useSearchStore.getState();
+    setLocation(location as string);
+    setDate(date as string);
+    setService(service as string);
+
+    // Go back to the search page
     router.back();
   };
 
@@ -127,53 +144,59 @@ export default function SearchResultsScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+    <View style={styles.container}>
+      <SafeAreaView style={styles.flex}>
+        <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={rf(18)} color="#7B1513" />
-        </TouchableOpacity>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+            <Ionicons name="chevron-back" size={rf(18)} color="#7B1513" />
+          </TouchableOpacity>
 
-        <View style={styles.searchInfo}>
-          <Text style={styles.searchLocation}>{location || "Flexible"}</Text>
-          <Text style={styles.searchDetails}>
-            {date || "I'm not sure"} • {service || "All"}
-          </Text>
+          <TouchableOpacity
+            style={styles.searchInfo}
+            onPress={handleSearchInfoPress}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.searchLocation}>{location || "Flexible"}</Text>
+            <Text style={styles.searchDetails}>
+              {date || "I'm not sure"} • {service || "All"}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setShowFilters(!showFilters)}
+            style={styles.filterButton}
+          >
+            <Ionicons name="options-outline" size={rf(20)} color="#7B1513" />
+          </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
-          onPress={() => setShowFilters(!showFilters)}
-          style={styles.filterButton}
-        >
-          <Ionicons name="options-outline" size={rf(20)} color="#7B1513" />
-        </TouchableOpacity>
-      </View>
-
-      {/* Results */}
-      <FlatList
-        data={filteredVendors}
-        keyExtractor={(item) => item.id}
-        renderItem={renderVendorCard}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              No vendors found matching your criteria
-            </Text>
-            <TouchableOpacity
-              style={styles.modifySearchButton}
-              onPress={handleBack}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.modifySearchText}>Modify Search</Text>
-            </TouchableOpacity>
-          </View>
-        }
-      />
-    </SafeAreaView>
+        {/* Results */}
+        <FlatList
+          data={filteredVendors}
+          keyExtractor={(item) => item.id}
+          renderItem={renderVendorCard}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>
+                No vendors found matching your criteria
+              </Text>
+              <TouchableOpacity
+                style={styles.modifySearchButton}
+                onPress={handleSearchInfoPress}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.modifySearchText}>Modify Search</Text>
+              </TouchableOpacity>
+            </View>
+          }
+        />
+      </SafeAreaView>
+    </View>
   );
 }
 
@@ -181,6 +204,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FFFFFF",
+  },
+  flex: {
+    flex: 1,
   },
   header: {
     flexDirection: "row",
@@ -200,7 +226,14 @@ const styles = StyleSheet.create({
   searchInfo: {
     flex: 1,
     alignItems: "center",
-    gap: rs(4),
+    justifyContent: "center",
+    borderColor: "#D4D4D4",
+    borderWidth: 1,
+    borderRadius: rs(24),
+    paddingVertical: rs(8),
+    paddingHorizontal: rs(16),
+    marginHorizontal: rs(12),
+    gap: rs(2),
   },
   searchLocation: {
     fontFamily: "Inter",
