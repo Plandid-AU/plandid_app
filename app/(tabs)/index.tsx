@@ -1,6 +1,7 @@
 import { router } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  Animated,
   FlatList,
   Platform,
   SafeAreaView,
@@ -25,9 +26,46 @@ export default function HomeScreen() {
     mockUser.favoriteVendors
   );
 
+  // Animation values
+  const cardAnimations = useRef<{ [key: string]: Animated.Value }>({}).current;
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
   // Filter vendors by selected category
   const filteredVendors = useMemo(() => {
     return mockVendors.filter((vendor) => vendor.category === selectedCategory);
+  }, [selectedCategory]);
+
+  // Initialize card animations for new vendors
+  useEffect(() => {
+    filteredVendors.forEach((vendor, index) => {
+      if (!cardAnimations[vendor.id]) {
+        cardAnimations[vendor.id] = new Animated.Value(0);
+      }
+    });
+  }, [filteredVendors]);
+
+  // Animate content transition when category changes
+  useEffect(() => {
+    setIsTransitioning(true);
+
+    // Reset and animate only the vendor cards
+    const cardAnimationPromises = filteredVendors.map((vendor, index) => {
+      cardAnimations[vendor.id].setValue(0);
+      return Animated.timing(cardAnimations[vendor.id], {
+        toValue: 1,
+        duration: 250,
+        delay: Math.min(index * 40, 200), // Cap the delay to prevent long waits
+        useNativeDriver: true,
+      });
+    });
+
+    if (cardAnimationPromises.length > 0) {
+      Animated.stagger(40, cardAnimationPromises).start(() => {
+        setIsTransitioning(false);
+      });
+    } else {
+      setIsTransitioning(false);
+    }
   }, [selectedCategory]);
 
   const handleSearchPress = () => {
@@ -52,6 +90,50 @@ export default function HomeScreen() {
     });
   };
 
+  const renderVendorCard = ({
+    item,
+    index,
+  }: {
+    item: Vendor;
+    index: number;
+  }) => {
+    const cardAnim = cardAnimations[item.id] || new Animated.Value(1);
+
+    const cardOpacity = cardAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0, 1],
+    });
+
+    const cardTranslateY = cardAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [30, 0],
+    });
+
+    const cardScale = cardAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0.95, 1],
+    });
+
+    return (
+      <Animated.View
+        style={[
+          styles.cardContainer,
+          {
+            opacity: cardOpacity,
+            transform: [{ translateY: cardTranslateY }, { scale: cardScale }],
+          },
+        ]}
+      >
+        <VendorCard
+          vendor={item}
+          onPress={() => handleVendorPress(item)}
+          onFavoritePress={handleFavoritePress}
+          isFavorited={favoriteVendors.includes(item.id)}
+        />
+      </Animated.View>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
@@ -73,16 +155,7 @@ export default function HomeScreen() {
             />
           </View>
         }
-        renderItem={({ item }) => (
-          <View style={styles.cardContainer}>
-            <VendorCard
-              vendor={item}
-              onPress={() => handleVendorPress(item)}
-              onFavoritePress={handleFavoritePress}
-              isFavorited={favoriteVendors.includes(item.id)}
-            />
-          </View>
-        )}
+        renderItem={renderVendorCard}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>
@@ -90,6 +163,18 @@ export default function HomeScreen() {
             </Text>
           </View>
         }
+        // Add some performance optimizations for smooth scrolling
+        removeClippedSubviews={true}
+        maxToRenderPerBatch={10}
+        windowSize={10}
+        initialNumToRender={8}
+        getItemLayout={(data, index) => ({
+          length: 200, // Approximate item height
+          offset: 200 * index,
+          index,
+        })}
+        // Disable scroll during transitions for smoother experience
+        scrollEnabled={!isTransitioning}
       />
     </SafeAreaView>
   );

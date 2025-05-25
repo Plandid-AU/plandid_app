@@ -1,9 +1,10 @@
 import { getLineHeight, rf, rh, rs } from "@/constants/Responsive";
-import React from "react";
+import * as Haptics from "expo-haptics";
+import React, { useEffect, useRef } from "react";
 import {
+  Animated,
   Platform,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -21,18 +22,62 @@ interface TabItemProps {
 }
 
 const TabItem: React.FC<TabItemProps> = ({ title, isSelected, onPress }) => {
+  const textColorAnim = useRef(new Animated.Value(isSelected ? 1 : 0)).current;
+  const scaleAnim = useRef(new Animated.Value(isSelected ? 1 : 0.95)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(textColorAnim, {
+        toValue: isSelected ? 1 : 0,
+        duration: 200,
+        useNativeDriver: false,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: isSelected ? 1 : 0.95,
+        tension: 100,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [isSelected]);
+
+  const textColor = textColorAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["#71727A", "#7B1513"],
+  });
+
+  const handlePress = () => {
+    // Add haptic feedback
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPress();
+  };
+
   return (
     <TouchableOpacity
       style={styles.tabItem}
-      onPress={onPress}
-      activeOpacity={0.7}
+      onPress={handlePress}
+      activeOpacity={0.8}
     >
-      <View style={styles.tabTitleContainer}>
-        <Text style={[styles.tabTitle, isSelected && styles.tabTitleSelected]}>
+      <Animated.View
+        style={[
+          styles.tabTitleContainer,
+          {
+            transform: [{ scale: scaleAnim }],
+          },
+        ]}
+      >
+        <Animated.Text
+          style={[
+            styles.tabTitle,
+            {
+              color: textColor,
+              fontWeight: isSelected ? "700" : "500",
+            },
+          ]}
+        >
           {title}
-        </Text>
-      </View>
-      {isSelected && <View style={styles.indicator} />}
+        </Animated.Text>
+      </Animated.View>
     </TouchableOpacity>
   );
 };
@@ -41,6 +86,38 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
   selectedCategory,
   onCategoryChange,
 }) => {
+  const indicatorAnim = useRef(new Animated.Value(0)).current;
+
+  const categories = [
+    VendorCategory.PHOTO,
+    VendorCategory.VIDEO,
+    VendorCategory.CONTENT,
+  ];
+  const selectedIndex = categories.indexOf(selectedCategory);
+
+  useEffect(() => {
+    // Animate indicator position
+    Animated.spring(indicatorAnim, {
+      toValue: selectedIndex,
+      tension: 100,
+      friction: 8,
+      useNativeDriver: true,
+    }).start();
+  }, [selectedIndex]);
+
+  const tabWidth = rs(88);
+  const indicatorWidth = rs(24);
+  const centerOffset = (tabWidth - indicatorWidth) / 2;
+
+  const indicatorTranslateX = indicatorAnim.interpolate({
+    inputRange: [0, 1, 2],
+    outputRange: [
+      centerOffset, // First tab center
+      tabWidth + centerOffset, // Second tab center
+      tabWidth * 2 + centerOffset, // Third tab center
+    ],
+  });
+
   return (
     <View style={styles.container}>
       <TabItem
@@ -58,6 +135,19 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
         isSelected={selectedCategory === VendorCategory.CONTENT}
         onPress={() => onCategoryChange(VendorCategory.CONTENT)}
       />
+
+      {/* Animated Indicator */}
+      <Animated.View
+        style={[
+          styles.indicator,
+          {
+            position: "absolute",
+            bottom: rs(4),
+            left: 0,
+            transform: [{ translateX: indicatorTranslateX }],
+          },
+        ]}
+      />
     </View>
   );
 };
@@ -69,12 +159,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: rs(4),
     borderRadius: rs(16),
+    position: "relative",
   },
   tabItem: {
     width: rs(88),
     height: rh(44),
     alignItems: "center",
-    gap: rs(4),
+    justifyContent: "center",
     borderRadius: rs(12),
   },
   tabTitleContainer: {
@@ -86,16 +177,9 @@ const styles = StyleSheet.create({
   },
   tabTitle: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-    fontWeight: "500",
     fontSize: rf(14),
     lineHeight: getLineHeight(rf(14), 1.43),
-    color: "#71727A",
     textAlign: "center",
-  },
-  tabTitleSelected: {
-    fontWeight: "700",
-    lineHeight: getLineHeight(rf(14), 1.2),
-    color: "#7B1513",
   },
   indicator: {
     width: rs(24),
