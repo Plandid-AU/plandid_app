@@ -488,6 +488,138 @@ export const mockVendors: Vendor[] = [
     hasAvailability: false,
     availability: generateAvailableDates(),
   },
+
+  // Additional vendors for different locations
+  {
+    id: "8",
+    name: "Perth Perfect Shots",
+    category: VendorCategory.PHOTO,
+    location: "Perth, WA",
+    tagline: "Sunset Ceremonies Captured Perfectly",
+    description:
+      "Specializing in beach and sunset wedding photography in Perth.",
+    rating: 4.8,
+    reviewCount: 14,
+    deliveryTime: "5 weeks delivery",
+    services: [
+      ServiceType.ENGAGEMENT_SHOOT,
+      ServiceType.WEDDING_ALBUM,
+      ServiceType.DRONE_PHOTOGRAPHY,
+    ],
+    styles: [
+      {
+        id: "style13",
+        name: "Beach Romance",
+        description: "Beautiful beach wedding photography",
+        imageUrl: `https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=200&h=200&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        vendorId: "8",
+      },
+    ],
+    images: [
+      {
+        id: "img20",
+        url: `https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        vendorId: "8",
+        order: 1,
+      },
+      {
+        id: "img21",
+        url: `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        vendorId: "8",
+        order: 2,
+      },
+    ],
+    reviews: [],
+    hasInstantQuote: true,
+    hasAvailability: true,
+    availability: generateAvailableDates(),
+  },
+  {
+    id: "9",
+    name: "Adelaide Artistry",
+    category: VendorCategory.PHOTO,
+    location: "Adelaide, SA",
+    tagline: "Wine Country Wedding Specialists",
+    description: "Capturing the charm of Adelaide's wine country weddings.",
+    rating: 4.9,
+    reviewCount: 18,
+    deliveryTime: "4 weeks delivery",
+    services: [
+      ServiceType.WEDDING_ALBUM,
+      ServiceType.PRINTS,
+      ServiceType.FILM_PHOTO_ADDON,
+    ],
+    styles: [
+      {
+        id: "style14",
+        name: "Vineyard Romance",
+        description: "Elegant wine country wedding photography",
+        imageUrl: `https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=200&h=200&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        vendorId: "9",
+      },
+    ],
+    images: [
+      {
+        id: "img22",
+        url: `https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        vendorId: "9",
+        order: 1,
+      },
+      {
+        id: "img23",
+        url: `https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        vendorId: "9",
+        order: 2,
+      },
+    ],
+    reviews: [],
+    hasInstantQuote: true,
+    hasAvailability: true,
+    availability: generateAvailableDates(),
+  },
+  {
+    id: "10",
+    name: "Albury Memories",
+    category: VendorCategory.PHOTO,
+    location: "Albury, NSW",
+    tagline: "Small Town Charm, Big Love Stories",
+    description: "Intimate wedding photography with a personal touch.",
+    rating: 4.7,
+    reviewCount: 9,
+    deliveryTime: "6 weeks delivery",
+    services: [
+      ServiceType.ENGAGEMENT_SHOOT,
+      ServiceType.WEDDING_ALBUM,
+      ServiceType.PRINTS,
+    ],
+    styles: [
+      {
+        id: "style15",
+        name: "Rustic Romance",
+        description: "Country-style wedding photography",
+        imageUrl: `https://images.unsplash.com/photo-1525258807787-8757f08c0f2c?w=200&h=200&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        vendorId: "10",
+      },
+    ],
+    images: [
+      {
+        id: "img24",
+        url: `https://images.unsplash.com/photo-1525258807787-8757f08c0f2c?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        vendorId: "10",
+        order: 1,
+      },
+      {
+        id: "img25",
+        url: `https://images.unsplash.com/photo-1556800440-57ad3da1251c?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        vendorId: "10",
+        order: 2,
+      },
+    ],
+    reviews: [],
+    hasInstantQuote: false,
+    hasAvailability: true,
+    availability: generateAvailableDates(),
+  },
 ];
 
 // Mock current user

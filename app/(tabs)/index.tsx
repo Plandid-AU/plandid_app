@@ -86,8 +86,8 @@ export default function HomeScreen() {
   }, [selectedCategory]);
 
   const handleSearchPress = () => {
-    // Navigate to search page (not implemented yet)
-    console.log("Search pressed");
+    // Navigate to search page
+    router.push("/search");
   };
 
   const handleVendorPress = (vendor: Vendor) => {
