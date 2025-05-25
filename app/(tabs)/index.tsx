@@ -30,6 +30,13 @@ export default function HomeScreen() {
   const cardAnimations = useRef<{ [key: string]: Animated.Value }>({}).current;
   const [isTransitioning, setIsTransitioning] = useState(false);
 
+  // Scroll tracking for shadow effect
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const [hasScrolled, setHasScrolled] = useState(false);
+
+  // FlatList ref for scroll control
+  const flatListRef = useRef<FlatList>(null);
+
   // Filter vendors by selected category
   const filteredVendors = useMemo(() => {
     return mockVendors.filter((vendor) => vendor.category === selectedCategory);
@@ -47,6 +54,16 @@ export default function HomeScreen() {
   // Animate content transition when category changes
   useEffect(() => {
     setIsTransitioning(true);
+
+    // Scroll to top smoothly if user has scrolled
+    if (hasScrolled && flatListRef.current) {
+      flatListRef.current.scrollToOffset({
+        offset: 0,
+        animated: true,
+      });
+      // Reset scroll state
+      setHasScrolled(false);
+    }
 
     // Reset and animate only the vendor cards
     const cardAnimationPromises = filteredVendors.map((vendor, index) => {
@@ -89,6 +106,17 @@ export default function HomeScreen() {
       return [...prev, vendorId];
     });
   };
+
+  const handleScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+    {
+      useNativeDriver: false,
+      listener: (event: any) => {
+        const offsetY = event.nativeEvent.contentOffset.y;
+        setHasScrolled(offsetY > 10);
+      },
+    }
+  );
 
   const renderVendorCard = ({
     item,
@@ -138,23 +166,35 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
+      {/* Sticky Header with Search Bar and Category Tabs */}
+      <View
+        style={[
+          styles.stickyHeader,
+          hasScrolled && styles.stickyHeaderWithShadow,
+        ]}
+      >
+        {/* Search Bar with consistent margins */}
+        <View style={styles.searchBarContainer}>
+          <SearchBar onPress={handleSearchPress} />
+        </View>
+
+        {/* Category Tabs - centered */}
+        <View style={styles.categoryTabsContainer}>
+          <CategoryTabs
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+          />
+        </View>
+      </View>
+
       <FlatList
+        ref={flatListRef}
         data={filteredVendors}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={
-          <View style={styles.header}>
-            {/* Search Bar */}
-            <SearchBar onPress={handleSearchPress} />
-
-            {/* Category Tabs */}
-            <CategoryTabs
-              selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
-            />
-          </View>
-        }
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         renderItem={renderVendorCard}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
@@ -185,15 +225,35 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
-  scrollContent: {
-    paddingBottom: rs(20),
-  },
-  header: {
-    alignItems: "center",
-    gap: rs(12),
-    paddingHorizontal: rs(16),
+  stickyHeader: {
+    backgroundColor: "#FFFFFF",
     paddingTop: rs(8),
     paddingBottom: rs(12),
+    borderBottomWidth: 1,
+    borderBottomColor: "#F5F5F5",
+  },
+  stickyHeaderWithShadow: {
+    // Add subtle shadow for better visual separation when scrolled
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  searchBarContainer: {
+    paddingHorizontal: rs(16),
+    marginBottom: rs(12),
+  },
+  categoryTabsContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  scrollContent: {
+    paddingTop: rs(12),
+    paddingBottom: rs(20),
   },
   emptyContainer: {
     flex: 1,
