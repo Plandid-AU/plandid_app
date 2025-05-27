@@ -3,23 +3,64 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   FlatList,
-  Platform,
   SafeAreaView,
   StatusBar,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
 
 import { CategoryTabs } from "@/components/CategoryTabs";
 import { SearchBar } from "@/components/SearchBar";
+import { ThemedText } from "@/components/ThemedText";
 import { VendorCard } from "@/components/VendorCard";
-import { getLineHeight, rf, rs } from "@/constants/Responsive";
+import { rs } from "@/constants/Responsive";
 import { mockVendors } from "@/data/mockData";
+import { useTheme } from "@/hooks/useTheme";
 import { useFavoritesStore } from "@/stores/favoritesStore";
 import { Vendor, VendorCategory } from "@/types";
 
+const createStyles = (theme: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.backgroundPrimary,
+    },
+    stickyHeader: {
+      backgroundColor: theme.colors.backgroundPrimary,
+      paddingTop: rs(8),
+      paddingBottom: rs(12),
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.borderLight,
+    },
+    stickyHeaderWithShadow: {
+      ...theme.shadows.sm,
+    },
+    searchBarContainer: {
+      paddingHorizontal: theme.spacing["2xl"],
+      marginBottom: rs(12),
+    },
+    categoryTabsContainer: {
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    scrollContent: {
+      paddingTop: rs(12),
+      paddingBottom: rs(20),
+    },
+    emptyContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingVertical: rs(100),
+    },
+    cardContainer: {
+      paddingHorizontal: theme.spacing["2xl"],
+    },
+  });
+
 export default function HomeScreen() {
+  const theme = useTheme();
+  const styles = createStyles(theme);
   const [selectedCategory, setSelectedCategory] = useState<VendorCategory>(
     VendorCategory.PHOTO
   );
@@ -189,9 +230,9 @@ export default function HomeScreen() {
         renderItem={renderVendorCard}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
+            <ThemedText type="body" style={{ color: theme.colors.textMuted }}>
               No vendors found in this category
-            </Text>
+            </ThemedText>
           </View>
         }
         // Add some performance optimizations for smooth scrolling
@@ -210,56 +251,3 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-  },
-  stickyHeader: {
-    backgroundColor: "#FFFFFF",
-    paddingTop: rs(8),
-    paddingBottom: rs(12),
-    borderBottomWidth: 1,
-    borderBottomColor: "#F5F5F5",
-  },
-  stickyHeaderWithShadow: {
-    // Add subtle shadow for better visual separation when scrolled
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  searchBarContainer: {
-    paddingHorizontal: rs(16),
-    marginBottom: rs(12),
-  },
-  categoryTabsContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  scrollContent: {
-    paddingTop: rs(12),
-    paddingBottom: rs(20),
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: rs(100),
-  },
-  emptyText: {
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-    fontWeight: "500",
-    fontSize: rf(16),
-    lineHeight: getLineHeight(rf(16), 1.2),
-    color: "#71727A",
-  },
-  cardContainer: {
-    paddingHorizontal: rs(16),
-  },
-});

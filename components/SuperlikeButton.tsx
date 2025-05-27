@@ -1,5 +1,6 @@
 import { Tooltip } from "@/components/Tooltip";
 import { rf, rs } from "@/constants/Responsive";
+import { useTheme } from "@/hooks/useTheme";
 import { useFavoritesStore } from "@/stores/favoritesStore";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -17,14 +18,39 @@ interface SuperlikeButtonProps {
   showTooltips?: boolean;
 }
 
+const createStyles = (theme: any) =>
+  StyleSheet.create({
+    heartButton: {
+      position: "relative",
+    },
+    heartIconContainer: {
+      width: rs(24),
+      height: rs(22),
+      justifyContent: "center",
+      alignItems: "center",
+      position: "relative",
+    },
+    heartIcon: {
+      ...theme.shadows.text,
+    },
+    lightningOverlay: {
+      position: "absolute",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+  });
+
 export const SuperlikeButton: React.FC<SuperlikeButtonProps> = ({
   vendorId,
   style,
   iconSize = rf(22),
-  iconColor = "#FFFAFC",
+  iconColor,
   onPress,
   showTooltips = true,
 }) => {
+  const theme = useTheme();
+  const styles = createStyles(theme);
+  const defaultIconColor = iconColor || theme.colors.white;
   const {
     isFavorited,
     isSuperliked,
@@ -249,9 +275,9 @@ export const SuperlikeButton: React.FC<SuperlikeButtonProps> = ({
   // Get icon color based on state
   const getIconColor = () => {
     if (isCurrentlySuperliked) {
-      return "#FFD700"; // Gold for superliked
+      return theme.colors.warning; // Gold for superliked
     } else {
-      return iconColor;
+      return defaultIconColor;
     }
   };
 
@@ -309,7 +335,11 @@ export const SuperlikeButton: React.FC<SuperlikeButtonProps> = ({
                 },
               ]}
             >
-              <Ionicons name="flash" size={iconSize * 1.2} color="#FFD700" />
+              <Ionicons
+                name="flash"
+                size={iconSize * 1.2}
+                color={theme.colors.warning}
+              />
             </Animated.View>
           )}
         </Animated.View>
@@ -343,27 +373,3 @@ export const SuperlikeButton: React.FC<SuperlikeButtonProps> = ({
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  heartButton: {
-    position: "relative",
-  },
-  heartIconContainer: {
-    width: rs(24),
-    height: rs(22),
-    justifyContent: "center",
-    alignItems: "center",
-    position: "relative",
-  },
-  heartIcon: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.4,
-    shadowRadius: rs(2),
-  },
-  lightningOverlay: {
-    position: "absolute",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});

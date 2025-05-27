@@ -1,13 +1,8 @@
-import { getLineHeight, rf, rh, rs } from "@/constants/Responsive";
+import { rh, rs } from "@/constants/Responsive";
+import { useTheme } from "@/hooks/useTheme";
 import * as Haptics from "expo-haptics";
 import React, { useEffect, useRef } from "react";
-import {
-  Animated,
-  Platform,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Animated, StyleSheet, TouchableOpacity, View } from "react-native";
 
 export enum FavouritesTab {
   LIKED = "LIKED",
@@ -24,11 +19,56 @@ interface TabItemProps {
   title: string;
   isSelected: boolean;
   onPress: () => void;
+  theme: any;
 }
 
-const TabItem: React.FC<TabItemProps> = ({ title, isSelected, onPress }) => {
+const createStyles = (theme: any) =>
+  StyleSheet.create({
+    container: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      paddingVertical: rs(4),
+      borderRadius: theme.borderRadius["2xl"],
+      position: "relative",
+    },
+    tabItem: {
+      width: rs(118),
+      height: rh(44),
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: theme.borderRadius.xl,
+    },
+    tabTitleContainer: {
+      height: rh(36),
+      paddingHorizontal: theme.spacing["2xl"],
+      paddingVertical: theme.spacing.base,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    tabTitle: {
+      fontFamily: theme.typography.fontFamily.primary,
+      fontSize: theme.typography.fontSize.base,
+      lineHeight: theme.typography.lineHeight.base,
+      textAlign: "center",
+    },
+    indicator: {
+      width: rs(24),
+      height: rs(4),
+      backgroundColor: theme.colors.primary,
+      borderRadius: rs(2),
+    },
+  });
+
+const TabItem: React.FC<TabItemProps> = ({
+  title,
+  isSelected,
+  onPress,
+  theme,
+}) => {
   const textColorAnim = useRef(new Animated.Value(isSelected ? 1 : 0)).current;
   const scaleAnim = useRef(new Animated.Value(isSelected ? 1 : 0.95)).current;
+  const styles = createStyles(theme);
 
   useEffect(() => {
     Animated.parallel([
@@ -48,7 +88,7 @@ const TabItem: React.FC<TabItemProps> = ({ title, isSelected, onPress }) => {
 
   const textColor = textColorAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ["#71727A", "#7B1513"],
+    outputRange: [theme.colors.textMuted, theme.colors.primary],
   });
 
   const handlePress = () => {
@@ -76,7 +116,9 @@ const TabItem: React.FC<TabItemProps> = ({ title, isSelected, onPress }) => {
             styles.tabTitle,
             {
               color: textColor,
-              fontWeight: isSelected ? "700" : "500",
+              fontWeight: isSelected
+                ? theme.typography.fontWeight.bold
+                : theme.typography.fontWeight.medium,
             },
           ]}
         >
@@ -91,6 +133,8 @@ export const FavouritesTabs: React.FC<FavouritesTabsProps> = ({
   selectedTab,
   onTabChange,
 }) => {
+  const theme = useTheme();
+  const styles = createStyles(theme);
   const indicatorAnim = useRef(new Animated.Value(0)).current;
 
   const tabs = [
@@ -129,16 +173,19 @@ export const FavouritesTabs: React.FC<FavouritesTabsProps> = ({
         title="Liked"
         isSelected={selectedTab === FavouritesTab.LIKED}
         onPress={() => onTabChange(FavouritesTab.LIKED)}
+        theme={theme}
       />
       <TabItem
         title="Super Liked"
         isSelected={selectedTab === FavouritesTab.SUPERLIKED}
         onPress={() => onTabChange(FavouritesTab.SUPERLIKED)}
+        theme={theme}
       />
       <TabItem
         title="Contacted"
         isSelected={selectedTab === FavouritesTab.CONTACTED}
         onPress={() => onTabChange(FavouritesTab.CONTACTED)}
+        theme={theme}
       />
 
       {/* Animated Indicator */}
@@ -156,40 +203,3 @@ export const FavouritesTabs: React.FC<FavouritesTabsProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: rs(4),
-    borderRadius: rs(16),
-    position: "relative",
-  },
-  tabItem: {
-    width: rs(118),
-    height: rh(44),
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: rs(12),
-  },
-  tabTitleContainer: {
-    height: rh(36),
-    paddingHorizontal: rs(16),
-    paddingVertical: rs(8),
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  tabTitle: {
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-    fontSize: rf(14),
-    lineHeight: getLineHeight(rf(14), 1.43),
-    textAlign: "center",
-  },
-  indicator: {
-    width: rs(24),
-    height: rs(4),
-    backgroundColor: "#7B1513",
-    borderRadius: rs(2),
-  },
-});

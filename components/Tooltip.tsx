@@ -1,4 +1,6 @@
-import { getLineHeight, rf, rs } from "@/constants/Responsive";
+import { ThemedText } from "@/components/ThemedText";
+import { rs } from "@/constants/Responsive";
+import { useTheme } from "@/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useRef } from "react";
 import {
@@ -6,7 +8,6 @@ import {
   Dimensions,
   Modal,
   StyleSheet,
-  Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
@@ -23,6 +24,39 @@ interface TooltipProps {
   arrowDirection?: "up" | "down" | "left" | "right";
 }
 
+const createStyles = (theme: any) =>
+  StyleSheet.create({
+    overlay: {
+      flex: 1,
+      backgroundColor: "transparent",
+    },
+    tooltip: {
+      position: "absolute",
+      backgroundColor: theme.colors.backgroundTooltip,
+      borderRadius: theme.borderRadius.xl,
+      padding: theme.spacing["2xl"],
+      ...theme.shadows.md,
+    },
+    content: {
+      gap: theme.spacing.base,
+    },
+    header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    title: {
+      flex: 1,
+    },
+    closeButton: {
+      width: rs(24),
+      height: rs(24),
+      alignItems: "center",
+      justifyContent: "center",
+      marginLeft: theme.spacing.base,
+    },
+  });
+
 export const Tooltip: React.FC<TooltipProps> = ({
   visible,
   onClose,
@@ -31,6 +65,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
   position,
   arrowDirection = "up",
 }) => {
+  const theme = useTheme();
+  const styles = createStyles(theme);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
@@ -74,10 +110,10 @@ export const Tooltip: React.FC<TooltipProps> = ({
     let top = position.y;
 
     // Adjust for screen boundaries
-    if (left < rs(16)) {
-      left = rs(16);
-    } else if (left + tooltipWidth > SCREEN_WIDTH - rs(16)) {
-      left = SCREEN_WIDTH - tooltipWidth - rs(16);
+    if (left < theme.spacing["2xl"]) {
+      left = theme.spacing["2xl"];
+    } else if (left + tooltipWidth > SCREEN_WIDTH - theme.spacing["2xl"]) {
+      left = SCREEN_WIDTH - tooltipWidth - theme.spacing["2xl"];
     }
 
     // Adjust vertical position based on arrow direction
@@ -101,10 +137,10 @@ export const Tooltip: React.FC<TooltipProps> = ({
     let arrowLeft = position.x - tooltipStyle.left - arrowSize;
 
     // Keep arrow within tooltip bounds
-    if (arrowLeft < rs(16)) {
-      arrowLeft = rs(16);
-    } else if (arrowLeft > tooltipStyle.width - rs(32)) {
-      arrowLeft = tooltipStyle.width - rs(32);
+    if (arrowLeft < theme.spacing["2xl"]) {
+      arrowLeft = theme.spacing["2xl"];
+    } else if (arrowLeft > tooltipStyle.width - theme.spacing["6xl"]) {
+      arrowLeft = tooltipStyle.width - theme.spacing["6xl"];
     }
 
     const baseStyle = {
@@ -125,7 +161,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
         borderTopWidth: arrowSize,
         borderLeftColor: "transparent",
         borderRightColor: "transparent",
-        borderTopColor: "#1F2024",
+        borderTopColor: theme.colors.backgroundTooltip,
       };
     } else {
       return {
@@ -136,7 +172,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
         borderBottomWidth: arrowSize,
         borderLeftColor: "transparent",
         borderRightColor: "transparent",
-        borderBottomColor: "#1F2024",
+        borderBottomColor: theme.colors.backgroundTooltip,
       };
     }
   };
@@ -164,12 +200,26 @@ export const Tooltip: React.FC<TooltipProps> = ({
           >
             <View style={styles.content}>
               <View style={styles.header}>
-                <Text style={styles.title}>{title}</Text>
+                <ThemedText
+                  type="label"
+                  style={[styles.title, { color: theme.colors.white }]}
+                >
+                  {title}
+                </ThemedText>
                 <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                  <Ionicons name="close" size={rf(16)} color="#FFFFFF" />
+                  <Ionicons
+                    name="close"
+                    size={theme.sizes.icon.md}
+                    color={theme.colors.white}
+                  />
                 </TouchableOpacity>
               </View>
-              <Text style={styles.message}>{message}</Text>
+              <ThemedText
+                type="bodySmall"
+                style={{ color: theme.colors.white }}
+              >
+                {message}
+              </ThemedText>
             </View>
             <View style={getArrowStyle()} />
           </Animated.View>
@@ -178,54 +228,3 @@ export const Tooltip: React.FC<TooltipProps> = ({
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: "transparent",
-  },
-  tooltip: {
-    position: "absolute",
-    backgroundColor: "#1F2024",
-    borderRadius: rs(12),
-    padding: rs(16),
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: rs(4),
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: rs(8),
-    elevation: 8,
-  },
-  content: {
-    gap: rs(8),
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  title: {
-    fontFamily: "System",
-    fontWeight: "700",
-    fontSize: rf(14),
-    lineHeight: getLineHeight(rf(14), 1.2),
-    color: "#FFFFFF",
-    flex: 1,
-  },
-  closeButton: {
-    width: rs(24),
-    height: rs(24),
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: rs(8),
-  },
-  message: {
-    fontFamily: "System",
-    fontWeight: "400",
-    fontSize: rf(12),
-    lineHeight: getLineHeight(rf(12), 1.33),
-    color: "#FFFFFF",
-  },
-});

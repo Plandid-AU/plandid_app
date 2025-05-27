@@ -1,26 +1,32 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Legacy Colors file - now imports from the universal Theme system
+ * This file is maintained for backward compatibility.
+ *
+ * For new development, please use:
+ * - import { theme } from '@/constants/Theme'
+ * - import { useTheme, useThemeColors } from '@/hooks/useTheme'
  */
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+import { theme } from "./Theme";
+
+const tintColorLight = theme.colors.info;
+const tintColorDark = theme.colors.white;
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
+    text: theme.colors.light.text,
+    background: theme.colors.light.background,
     tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
+    icon: theme.colors.light.icon,
+    tabIconDefault: theme.colors.light.tabIconDefault,
     tabIconSelected: tintColorLight,
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
+    text: theme.colors.dark.text,
+    background: theme.colors.dark.background,
     tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
+    icon: theme.colors.dark.icon,
+    tabIconDefault: theme.colors.dark.tabIconDefault,
     tabIconSelected: tintColorDark,
   },
 };

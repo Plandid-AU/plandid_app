@@ -1,45 +1,43 @@
-import { getLineHeight, rf, rs } from "@/constants/Responsive";
+import { ThemedText } from "@/components/ThemedText";
+import { rs } from "@/constants/Responsive";
+import { useTheme } from "@/hooks/useTheme";
 import React from "react";
-import { Platform, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView, StyleSheet, View } from "react-native";
+
+const createStyles = (theme: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.backgroundPrimary,
+    },
+    content: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: theme.spacing["5xl"],
+    },
+  });
 
 export default function ProfileScreen() {
+  const theme = useTheme();
+  const styles = createStyles(theme);
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Profile</Text>
-        <Text style={styles.subtitle}>
+        <ThemedText type="h3" style={{ marginBottom: rs(8) }}>
+          Profile
+        </ThemedText>
+        <ThemedText
+          type="body"
+          style={{
+            color: theme.colors.textMuted,
+            textAlign: "center",
+          }}
+        >
           Your profile settings will appear here
-        </Text>
+        </ThemedText>
       </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-  },
-  content: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: rs(20),
-  },
-  title: {
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-    fontWeight: "800",
-    fontSize: rf(24),
-    lineHeight: getLineHeight(rf(24), 1.2),
-    color: "#000000",
-    marginBottom: rs(8),
-  },
-  subtitle: {
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-    fontWeight: "500",
-    fontSize: rf(16),
-    lineHeight: getLineHeight(rf(16), 1.375),
-    color: "#71727A",
-    textAlign: "center",
-  },
-});

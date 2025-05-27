@@ -1,13 +1,13 @@
-import { getLineHeight, rf, rs } from "@/constants/Responsive";
+import { ThemedText } from "@/components/ThemedText";
+import { rf, rs } from "@/constants/Responsive";
+import { useTheme } from "@/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useRef } from "react";
 import {
   Animated,
   Dimensions,
   Modal,
-  Platform,
   StyleSheet,
-  Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
@@ -29,6 +29,66 @@ interface VendorOptionsModalProps {
   onReport?: () => void;
 }
 
+const createStyles = (theme: any) =>
+  StyleSheet.create({
+    overlay: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: theme.colors.overlayDark,
+    },
+    modal: {
+      position: "absolute",
+      bottom: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: theme.colors.backgroundPrimary,
+      borderTopLeftRadius: theme.borderRadius.xl,
+      borderTopRightRadius: theme.borderRadius.xl,
+      paddingBottom: theme.layout.safeAreaBottom,
+    },
+    header: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: theme.spacing["2xl"],
+      paddingHorizontal: theme.spacing["5xl"],
+    },
+    closeButton: {
+      width: rs(18),
+      height: rs(18),
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    optionsContainer: {
+      paddingHorizontal: theme.spacing["3xl"],
+    },
+    option: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: theme.spacing["2xl"],
+      paddingHorizontal: theme.spacing["3xl"],
+      gap: theme.spacing["5xl"],
+    },
+    optionIcon: {
+      width: rs(26),
+      height: rs(26),
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    optionContent: {
+      flex: 1,
+      gap: rs(4),
+    },
+    divider: {
+      height: rs(0.5),
+      backgroundColor: theme.colors.borderLight,
+      marginHorizontal: theme.spacing["3xl"],
+    },
+  });
+
 export const VendorOptionsModal: React.FC<VendorOptionsModalProps> = ({
   visible,
   onClose,
@@ -41,6 +101,8 @@ export const VendorOptionsModal: React.FC<VendorOptionsModalProps> = ({
   onRemove,
   onReport,
 }) => {
+  const theme = useTheme();
+  const styles = createStyles(theme);
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
 
@@ -97,15 +159,17 @@ export const VendorOptionsModal: React.FC<VendorOptionsModalProps> = ({
     title: string,
     description: string,
     onPress: () => void,
-    iconColor: string = "#000000"
+    iconColor: string = theme.colors.textPrimary
   ) => (
     <TouchableOpacity style={styles.option} onPress={onPress}>
       <View style={styles.optionIcon}>
         <Ionicons name={icon as any} size={rf(26)} color={iconColor} />
       </View>
       <View style={styles.optionContent}>
-        <Text style={styles.optionTitle}>{title}</Text>
-        <Text style={styles.optionDescription}>{description}</Text>
+        <ThemedText type="body">{title}</ThemedText>
+        <ThemedText type="bodySmall" style={{ color: theme.colors.textMuted }}>
+          {description}
+        </ThemedText>
       </View>
     </TouchableOpacity>
   );
@@ -243,9 +307,13 @@ export const VendorOptionsModal: React.FC<VendorOptionsModalProps> = ({
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Options</Text>
+          <ThemedText type="h3">Options</ThemedText>
           <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-            <Ionicons name="close" size={rf(18)} color="#000000" />
+            <Ionicons
+              name="close"
+              size={rf(18)}
+              color={theme.colors.textPrimary}
+            />
           </TouchableOpacity>
         </View>
 
@@ -259,85 +327,3 @@ export const VendorOptionsModal: React.FC<VendorOptionsModalProps> = ({
     </Modal>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(31, 32, 36, 0.4)",
-  },
-  modal: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: rs(12),
-    borderTopRightRadius: rs(12),
-    paddingBottom: rs(34), // Safe area padding
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: rs(16),
-    paddingHorizontal: rs(24),
-  },
-  title: {
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-    fontWeight: "800",
-    fontSize: rf(24),
-    lineHeight: getLineHeight(rf(24), 1.2),
-    letterSpacing: 0.01,
-    color: "#000000",
-  },
-  closeButton: {
-    width: rs(18),
-    height: rs(18),
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  optionsContainer: {
-    paddingHorizontal: rs(18),
-  },
-  option: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: rs(16),
-    paddingHorizontal: rs(18),
-    gap: rs(24),
-  },
-  optionIcon: {
-    width: rs(26),
-    height: rs(26),
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  optionContent: {
-    flex: 1,
-    gap: rs(4),
-  },
-  optionTitle: {
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-    fontWeight: "500",
-    fontSize: rf(14),
-    lineHeight: getLineHeight(rf(14), 1.43),
-    color: "#000000",
-  },
-  optionDescription: {
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-    fontWeight: "500",
-    fontSize: rf(12),
-    lineHeight: getLineHeight(rf(12), 1.33),
-    letterSpacing: 0.01,
-    color: "#808080",
-  },
-  divider: {
-    height: rs(0.5),
-    backgroundColor: "#D4D6DD",
-    marginHorizontal: rs(18),
-  },
-});

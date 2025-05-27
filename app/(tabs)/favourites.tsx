@@ -1,9 +1,11 @@
 import { FavouritesEmptyState } from "@/components/FavouritesEmptyState";
 import { FavouritesTab, FavouritesTabs } from "@/components/FavouritesTabs";
 import { FavouritesVendorCard } from "@/components/FavouritesVendorCard";
+import { ThemedText } from "@/components/ThemedText";
 import { VendorOptionsModal } from "@/components/VendorOptionsModal";
-import { getLineHeight, rf, rs } from "@/constants/Responsive";
+import { rs } from "@/constants/Responsive";
 import { mockVendors } from "@/data/mockData";
+import { useTheme } from "@/hooks/useTheme";
 import { useFavoritesStore } from "@/stores/favoritesStore";
 import { Vendor } from "@/types";
 import { router } from "expo-router";
@@ -12,15 +14,39 @@ import {
   Alert,
   Animated,
   FlatList,
-  Platform,
   SafeAreaView,
   Share,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
 
+const createStyles = (theme: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.backgroundPrimary,
+    },
+    header: {
+      paddingHorizontal: theme.spacing["5xl"],
+      paddingVertical: theme.spacing["2xl"],
+    },
+    tabsContainer: {
+      alignItems: "center",
+      paddingVertical: rs(8),
+    },
+    listContent: {
+      paddingTop: theme.spacing["5xl"],
+      paddingBottom: theme.spacing["4xl"],
+      paddingHorizontal: theme.spacing["5xl"],
+    },
+    cardContainer: {
+      // No additional styling needed as animation is applied here
+    },
+  });
+
 export default function FavouritesScreen() {
+  const theme = useTheme();
+  const styles = createStyles(theme);
   const {
     favoriteVendors,
     superlikedVendors,
@@ -257,7 +283,7 @@ export default function FavouritesScreen() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>My Vendors</Text>
+        <ThemedText type="h3">My Vendors</ThemedText>
       </View>
 
       {/* Tabs */}
@@ -303,34 +329,3 @@ export default function FavouritesScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-  },
-  header: {
-    paddingHorizontal: rs(24),
-    paddingVertical: rs(16),
-  },
-  title: {
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-    fontWeight: "700",
-    fontSize: rf(24),
-    lineHeight: getLineHeight(rf(24), 1.42),
-    color: "#000000",
-    textAlign: "left",
-  },
-  tabsContainer: {
-    alignItems: "center",
-    paddingVertical: rs(8),
-  },
-  listContent: {
-    paddingTop: rs(24),
-    paddingBottom: rs(20),
-    paddingHorizontal: rs(24),
-  },
-  cardContainer: {
-    // No additional styling needed as animation is applied here
-  },
-});
