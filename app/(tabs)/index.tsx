@@ -23,7 +23,7 @@ export default function HomeScreen() {
   const [selectedCategory, setSelectedCategory] = useState<VendorCategory>(
     VendorCategory.PHOTO
   );
-  const { loadFavorites } = useFavoritesStore();
+  const { loadFavorites, loadUserPreferences } = useFavoritesStore();
 
   // Animation values
   const cardAnimations = useRef<{ [key: string]: Animated.Value }>({}).current;
@@ -36,10 +36,11 @@ export default function HomeScreen() {
   // FlatList ref for scroll control
   const flatListRef = useRef<FlatList>(null);
 
-  // Load favorites when component mounts
+  // Load favorites and user preferences when component mounts
   useEffect(() => {
     loadFavorites();
-  }, [loadFavorites]);
+    loadUserPreferences();
+  }, [loadFavorites, loadUserPreferences]);
 
   // Filter vendors by selected category
   const filteredVendors = useMemo(() => {

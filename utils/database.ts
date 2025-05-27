@@ -4,6 +4,74 @@ import * as SQLite from "expo-sqlite";
 // Open database
 const db = SQLite.openDatabaseSync("plandid.db");
 
+// Database migration functions
+const getCurrentSchemaVersion = (): number => {
+  try {
+    // Create schema_version table if it doesn't exist
+    db.execSync(`
+      CREATE TABLE IF NOT EXISTS schema_version (
+        version INTEGER PRIMARY KEY
+      )
+    `);
+
+    const result = db.getFirstSync(
+      `SELECT version FROM schema_version ORDER BY version DESC LIMIT 1`
+    ) as any;
+    return result ? result.version : 0;
+  } catch (error) {
+    console.error("Error getting schema version:", error);
+    return 0;
+  }
+};
+
+const setSchemaVersion = (version: number) => {
+  try {
+    db.runSync(`INSERT OR REPLACE INTO schema_version (version) VALUES (?)`, [
+      version,
+    ]);
+  } catch (error) {
+    console.error("Error setting schema version:", error);
+  }
+};
+
+const runMigrations = () => {
+  const currentVersion = getCurrentSchemaVersion();
+  console.log(`Current database schema version: ${currentVersion}`);
+
+  try {
+    // Migration 1: Add isSuperliked column to favorites table
+    if (currentVersion < 1) {
+      console.log("Running migration 1: Adding isSuperliked column...");
+
+      // Check if favorites table exists and has isSuperliked column
+      const tableInfo = db.getAllSync(`PRAGMA table_info(favorites)`);
+      const hasIsSuperlikedColumn = tableInfo.some(
+        (column: any) => column.name === "isSuperliked"
+      );
+
+      if (!hasIsSuperlikedColumn) {
+        db.execSync(
+          `ALTER TABLE favorites ADD COLUMN isSuperliked INTEGER DEFAULT 0`
+        );
+        console.log("Migration 1 completed: isSuperliked column added");
+      } else {
+        console.log("Migration 1 skipped: isSuperliked column already exists");
+      }
+
+      setSchemaVersion(1);
+    }
+
+    // Future migrations can be added here
+    // if (currentVersion < 2) {
+    //   // Migration 2 code here
+    //   setSchemaVersion(2);
+    // }
+  } catch (error) {
+    console.error("Error running migrations:", error);
+    // If the table doesn't exist, it will be created in initDatabase
+  }
+};
+
 // Initialize database tables
 export const initDatabase = () => {
   return new Promise<void>((resolve, reject) => {
@@ -92,11 +160,29 @@ export const initDatabase = () => {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           userId TEXT NOT NULL,
           vendorId TEXT NOT NULL,
+          isSuperliked INTEGER DEFAULT 0,
           createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
           UNIQUE(userId, vendorId),
           FOREIGN KEY (vendorId) REFERENCES vendors(id)
         );`
       );
+
+      // User preferences table for tooltip tracking
+      db.execSync(
+        `CREATE TABLE IF NOT EXISTS user_preferences (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          userId TEXT NOT NULL,
+          hasSeenSuperlikeTooltip INTEGER DEFAULT 0,
+          hasSeenUndoSuperlikeTooltip INTEGER DEFAULT 0,
+          hasCompletedFirstSuperlike INTEGER DEFAULT 0,
+          createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(userId)
+        );`
+      );
+
+      // Run migrations after creating tables
+      runMigrations();
 
       resolve();
     } catch (error) {
@@ -293,14 +379,74 @@ export const toggleFavorite = async (
         resolve(false);
       } else {
         // Add favorite
-        db.runSync(`INSERT INTO favorites (userId, vendorId) VALUES (?, ?)`, [
-          userId,
-          vendorId,
-        ]);
+        db.runSync(
+          `INSERT INTO favorites (userId, vendorId, isSuperliked) VALUES (?, ?, ?)`,
+          [userId, vendorId, 0]
+        );
         resolve(true);
       }
     } catch (error) {
       console.error("Error toggling favorite:", error);
+      reject(error);
+    }
+  });
+};
+
+// Toggle superlike
+export const toggleSuperlike = async (
+  userId: string,
+  vendorId: string
+): Promise<{ isSuperliked: boolean; isFavorited: boolean }> => {
+  return new Promise((resolve, reject) => {
+    try {
+      // Check if already favorited
+      const existing = db.getFirstSync(
+        `SELECT * FROM favorites WHERE userId = ? AND vendorId = ?`,
+        [userId, vendorId]
+      ) as any;
+
+      if (existing) {
+        if (existing.isSuperliked) {
+          // Remove superlike, keep as regular favorite
+          db.runSync(
+            `UPDATE favorites SET isSuperliked = 0 WHERE userId = ? AND vendorId = ?`,
+            [userId, vendorId]
+          );
+          resolve({ isSuperliked: false, isFavorited: true });
+        } else {
+          // Add superlike
+          db.runSync(
+            `UPDATE favorites SET isSuperliked = 1 WHERE userId = ? AND vendorId = ?`,
+            [userId, vendorId]
+          );
+
+          // Mark that user has completed their first superlike
+          db.runSync(
+            `INSERT OR REPLACE INTO user_preferences (userId, hasCompletedFirstSuperlike, updatedAt) 
+             VALUES (?, 1, CURRENT_TIMESTAMP)`,
+            [userId]
+          );
+
+          resolve({ isSuperliked: true, isFavorited: true });
+        }
+      } else {
+        // Add as superliked favorite
+        db.runSync(
+          `INSERT INTO favorites (userId, vendorId, isSuperliked) VALUES (?, ?, ?)`,
+          [userId, vendorId, 1]
+        );
+
+        // Mark that user has completed their first superlike
+        db.runSync(
+          `INSERT OR REPLACE INTO user_preferences (userId, hasCompletedFirstSuperlike, updatedAt) 
+           VALUES (?, 1, CURRENT_TIMESTAMP)`,
+          [userId]
+        );
+
+        resolve({ isSuperliked: true, isFavorited: true });
+      }
+    } catch (error) {
+      console.error("Error toggling superlike:", error);
       reject(error);
     }
   });
@@ -318,6 +464,108 @@ export const getUserFavorites = async (userId: string): Promise<string[]> => {
       resolve(favorites);
     } catch (error) {
       console.error("Error getting favorites:", error);
+      reject(error);
+    }
+  });
+};
+
+// Get user superlikes
+export const getUserSuperlikes = async (userId: string): Promise<string[]> => {
+  return new Promise((resolve, reject) => {
+    try {
+      const result = db.getAllSync(
+        `SELECT vendorId FROM favorites WHERE userId = ? AND isSuperliked = 1`,
+        [userId]
+      );
+      const superlikes = result.map((row: any) => row.vendorId);
+      resolve(superlikes);
+    } catch (error) {
+      console.error("Error getting superlikes:", error);
+      reject(error);
+    }
+  });
+};
+
+// Get vendor favorite status
+export const getVendorFavoriteStatus = async (
+  userId: string,
+  vendorId: string
+): Promise<{ isFavorited: boolean; isSuperliked: boolean }> => {
+  return new Promise((resolve, reject) => {
+    try {
+      const result = db.getFirstSync(
+        `SELECT isSuperliked FROM favorites WHERE userId = ? AND vendorId = ?`,
+        [userId, vendorId]
+      ) as any;
+
+      if (result) {
+        resolve({ isFavorited: true, isSuperliked: result.isSuperliked === 1 });
+      } else {
+        resolve({ isFavorited: false, isSuperliked: false });
+      }
+    } catch (error) {
+      console.error("Error getting vendor favorite status:", error);
+      reject(error);
+    }
+  });
+};
+
+// User preferences functions
+export const getUserPreferences = async (
+  userId: string
+): Promise<{
+  hasSeenSuperlikeTooltip: boolean;
+  hasSeenUndoSuperlikeTooltip: boolean;
+  hasCompletedFirstSuperlike: boolean;
+}> => {
+  return new Promise((resolve, reject) => {
+    try {
+      const result = db.getFirstSync(
+        `SELECT * FROM user_preferences WHERE userId = ?`,
+        [userId]
+      ) as any;
+
+      if (result) {
+        resolve({
+          hasSeenSuperlikeTooltip: result.hasSeenSuperlikeTooltip === 1,
+          hasSeenUndoSuperlikeTooltip: result.hasSeenUndoSuperlikeTooltip === 1,
+          hasCompletedFirstSuperlike: result.hasCompletedFirstSuperlike === 1,
+        });
+      } else {
+        // Initialize preferences for new user
+        db.runSync(`INSERT INTO user_preferences (userId) VALUES (?)`, [
+          userId,
+        ]);
+        resolve({
+          hasSeenSuperlikeTooltip: false,
+          hasSeenUndoSuperlikeTooltip: false,
+          hasCompletedFirstSuperlike: false,
+        });
+      }
+    } catch (error) {
+      console.error("Error getting user preferences:", error);
+      reject(error);
+    }
+  });
+};
+
+export const updateUserPreference = async (
+  userId: string,
+  preference:
+    | "hasSeenSuperlikeTooltip"
+    | "hasSeenUndoSuperlikeTooltip"
+    | "hasCompletedFirstSuperlike",
+  value: boolean
+): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    try {
+      db.runSync(
+        `INSERT OR REPLACE INTO user_preferences (userId, ${preference}, updatedAt) VALUES (?, ?, CURRENT_TIMESTAMP)`,
+        [userId, value ? 1 : 0]
+      );
+      resolve();
+    } catch (error) {
+      console.error("Error updating user preference:", error);
       reject(error);
     }
   });

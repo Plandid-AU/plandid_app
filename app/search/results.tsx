@@ -23,7 +23,7 @@ import {
 export default function SearchResultsScreen() {
   const params = useLocalSearchParams();
   const { location, date, service } = params;
-  const { loadFavorites } = useFavoritesStore();
+  const { loadFavorites, loadUserPreferences } = useFavoritesStore();
 
   const [showFilters, setShowFilters] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -36,8 +36,9 @@ export default function SearchResultsScreen() {
   const { addRecentSearch } = useSearchStore();
 
   useEffect(() => {
-    // Load favorites
+    // Load favorites and user preferences
     loadFavorites();
+    loadUserPreferences();
 
     // Add to recent searches when page loads
     if (location && date && service) {

@@ -1,5 +1,5 @@
+import { SuperlikeButton } from "@/components/SuperlikeButton";
 import { getLineHeight, rf, rh, rs } from "@/constants/Responsive";
-import { useFavoritesStore } from "@/stores/favoritesStore";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useCallback, useRef, useState } from "react";
@@ -29,7 +29,6 @@ interface VendorCardProps {
 }
 
 export const VendorCard: React.FC<VendorCardProps> = ({ vendor, onPress }) => {
-  const { isFavorited, toggleFavoriteVendor } = useFavoritesStore();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageLoadingStates, setImageLoadingStates] = useState<{
     [key: string]: boolean;
@@ -160,23 +159,16 @@ export const VendorCard: React.FC<VendorCardProps> = ({ vendor, onPress }) => {
           pointerEvents="none"
         />
 
-        {/* Heart Icon */}
-        <TouchableOpacity
+        {/* Superlike Button */}
+        <SuperlikeButton
+          vendorId={vendor.id}
           style={styles.heartButton}
-          onPress={(e) => {
-            e.stopPropagation();
-            toggleFavoriteVendor(vendor.id);
+          iconSize={rf(22)}
+          iconColor="#FFFAFC"
+          onPress={(e?: any) => {
+            e?.stopPropagation?.();
           }}
-        >
-          <View style={styles.heartIconContainer}>
-            <Ionicons
-              name={isFavorited(vendor.id) ? "heart" : "heart-outline"}
-              size={rf(22)}
-              color="#FFFAFC"
-              style={styles.heartIcon}
-            />
-          </View>
-        </TouchableOpacity>
+        />
 
         {/* Pagination Dots */}
         {vendor.images.length > 1 && (

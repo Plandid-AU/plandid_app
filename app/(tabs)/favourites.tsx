@@ -15,11 +15,13 @@ import {
 } from "react-native";
 
 export default function FavouritesScreen() {
-  const { favoriteVendors, loadFavorites } = useFavoritesStore();
+  const { favoriteVendors, loadFavorites, loadUserPreferences } =
+    useFavoritesStore();
 
   useEffect(() => {
     loadFavorites();
-  }, [loadFavorites]);
+    loadUserPreferences();
+  }, [loadFavorites, loadUserPreferences]);
 
   // Get favorite vendor objects
   const favoriteVendorObjects = mockVendors.filter((vendor) =>

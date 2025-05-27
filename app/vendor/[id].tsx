@@ -1,3 +1,4 @@
+import { SuperlikeButton } from "@/components/SuperlikeButton";
 import { getLineHeight, rf, rh, rs } from "@/constants/Responsive";
 import { mockUser, mockVendors } from "@/data/mockData";
 import { useFavoritesStore } from "@/stores/favoritesStore";
@@ -28,8 +29,7 @@ const IMAGE_HEIGHT = rh(342);
 export default function VendorDetailsScreen() {
   const { id } = useLocalSearchParams();
   const vendor = mockVendors.find((v) => v.id === id) as Vendor;
-  const { isFavorited, toggleFavoriteVendor, loadFavorites } =
-    useFavoritesStore();
+  const { loadFavorites } = useFavoritesStore();
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [expandedReviews, setExpandedReviews] = useState<string[]>([]);
@@ -442,16 +442,15 @@ export default function VendorDetailsScreen() {
         </TouchableOpacity>
 
         <View style={styles.navRightButtons}>
-          <TouchableOpacity
+          <View
             style={[styles.navButton, !isScrolled && styles.navButtonWithBg]}
-            onPress={() => toggleFavoriteVendor(vendor.id)}
           >
-            <Ionicons
-              name={isFavorited(vendor.id) ? "heart" : "heart-outline"}
-              size={rf(22)}
-              color={isScrolled ? "#000000" : "#000000"}
+            <SuperlikeButton
+              vendorId={vendor.id}
+              iconSize={rf(22)}
+              iconColor={isScrolled ? "#000000" : "#000000"}
             />
-          </TouchableOpacity>
+          </View>
           <TouchableOpacity
             style={[styles.navButton, !isScrolled && styles.navButtonWithBg]}
           >
