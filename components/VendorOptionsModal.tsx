@@ -97,7 +97,7 @@ export const VendorOptionsModal: React.FC<VendorOptionsModalProps> = ({
     title: string,
     description: string,
     onPress: () => void,
-    iconColor: string = "#7B1513"
+    iconColor: string = "#000000"
   ) => (
     <TouchableOpacity style={styles.option} onPress={onPress}>
       <View style={styles.optionIcon}>
@@ -146,8 +146,7 @@ export const VendorOptionsModal: React.FC<VendorOptionsModalProps> = ({
         "warning",
         "Report Vendor",
         "Something isn't right? Let us know!",
-        onReport || (() => {}),
-        "#D9D9D9"
+        onReport || (() => {})
       )}
     </>
   );
@@ -186,8 +185,7 @@ export const VendorOptionsModal: React.FC<VendorOptionsModalProps> = ({
         "warning",
         "Report Vendor",
         "Something isn't right? Let us know!",
-        onReport || (() => {}),
-        "#D9D9D9"
+        onReport || (() => {})
       )}
     </>
   );
@@ -212,8 +210,7 @@ export const VendorOptionsModal: React.FC<VendorOptionsModalProps> = ({
         "warning",
         "Report Vendor",
         "Something isn't right? Let us know!",
-        onReport || (() => {}),
-        "#D9D9D9"
+        onReport || (() => {})
       )}
     </>
   );
@@ -248,7 +245,7 @@ export const VendorOptionsModal: React.FC<VendorOptionsModalProps> = ({
         <View style={styles.header}>
           <Text style={styles.title}>Options</Text>
           <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-            <Ionicons name="close" size={rf(18)} color="#7B1513" />
+            <Ionicons name="close" size={rf(18)} color="#000000" />
           </TouchableOpacity>
         </View>
 

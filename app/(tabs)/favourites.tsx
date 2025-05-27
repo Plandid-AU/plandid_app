@@ -312,22 +312,18 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: rs(24),
     paddingVertical: rs(16),
-    borderBottomWidth: 1,
-    borderBottomColor: "#F5F5F5",
   },
   title: {
     fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-    fontWeight: "800",
+    fontWeight: "700",
     fontSize: rf(24),
     lineHeight: getLineHeight(rf(24), 1.42),
     color: "#000000",
-    textAlign: "center",
+    textAlign: "left",
   },
   tabsContainer: {
     alignItems: "center",
     paddingVertical: rs(8),
-    borderBottomWidth: 1,
-    borderBottomColor: "#F5F5F5",
   },
   listContent: {
     paddingTop: rs(24),

@@ -48,7 +48,7 @@ const TabItem: React.FC<TabItemProps> = ({ title, isSelected, onPress }) => {
 
   const textColor = textColorAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ["#71727A", "#1F2024"],
+    outputRange: ["#71727A", "#7B1513"],
   });
 
   const handlePress = () => {
