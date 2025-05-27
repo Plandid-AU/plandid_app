@@ -74,9 +74,9 @@ const colors = {
 // Typography
 const typography = {
   fontFamily: {
-    primary: Platform.OS === "ios" ? "System" : "Roboto",
+    primary: "Inter",
     secondary: "Inter",
-    tertiary: "Urbanist",
+    tertiary: "Inter",
   },
 
   fontSize: {
