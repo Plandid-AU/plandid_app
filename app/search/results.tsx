@@ -1,4 +1,5 @@
 import { VendorCard } from "@/components/VendorCard";
+import { SearchResultsFilterModal } from "@/components/search/SearchResultsFilterModal";
 import { getLineHeight, rf, rs } from "@/constants/Responsive";
 import { mockVendors } from "@/data/mockData";
 import { useSearchStore } from "@/stores/searchStore";
@@ -194,6 +195,12 @@ export default function SearchResultsScreen() {
               </TouchableOpacity>
             </View>
           }
+        />
+
+        {/* Filter Modal */}
+        <SearchResultsFilterModal
+          visible={showFilters}
+          onClose={() => setShowFilters(false)}
         />
       </SafeAreaView>
     </View>
