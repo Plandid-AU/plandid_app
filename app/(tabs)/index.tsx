@@ -15,16 +15,15 @@ import { CategoryTabs } from "@/components/CategoryTabs";
 import { SearchBar } from "@/components/SearchBar";
 import { VendorCard } from "@/components/VendorCard";
 import { getLineHeight, rf, rs } from "@/constants/Responsive";
-import { mockUser, mockVendors } from "@/data/mockData";
+import { mockVendors } from "@/data/mockData";
+import { useFavoritesStore } from "@/stores/favoritesStore";
 import { Vendor, VendorCategory } from "@/types";
 
 export default function HomeScreen() {
   const [selectedCategory, setSelectedCategory] = useState<VendorCategory>(
     VendorCategory.PHOTO
   );
-  const [favoriteVendors, setFavoriteVendors] = useState<string[]>(
-    mockUser.favoriteVendors
-  );
+  const { loadFavorites } = useFavoritesStore();
 
   // Animation values
   const cardAnimations = useRef<{ [key: string]: Animated.Value }>({}).current;
@@ -36,6 +35,11 @@ export default function HomeScreen() {
 
   // FlatList ref for scroll control
   const flatListRef = useRef<FlatList>(null);
+
+  // Load favorites when component mounts
+  useEffect(() => {
+    loadFavorites();
+  }, [loadFavorites]);
 
   // Filter vendors by selected category
   const filteredVendors = useMemo(() => {
@@ -98,15 +102,6 @@ export default function HomeScreen() {
     });
   };
 
-  const handleFavoritePress = (vendorId: string) => {
-    setFavoriteVendors((prev) => {
-      if (prev.includes(vendorId)) {
-        return prev.filter((id) => id !== vendorId);
-      }
-      return [...prev, vendorId];
-    });
-  };
-
   const handleScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { y: scrollY } } }],
     {
@@ -152,12 +147,7 @@ export default function HomeScreen() {
           },
         ]}
       >
-        <VendorCard
-          vendor={item}
-          onPress={() => handleVendorPress(item)}
-          onFavoritePress={handleFavoritePress}
-          isFavorited={favoriteVendors.includes(item.id)}
-        />
+        <VendorCard vendor={item} onPress={() => handleVendorPress(item)} />
       </Animated.View>
     );
   };

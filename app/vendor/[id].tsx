@@ -1,10 +1,11 @@
 import { getLineHeight, rf, rh, rs } from "@/constants/Responsive";
 import { mockUser, mockVendors } from "@/data/mockData";
+import { useFavoritesStore } from "@/stores/favoritesStore";
 import { Vendor } from "@/types";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -27,9 +28,10 @@ const IMAGE_HEIGHT = rh(342);
 export default function VendorDetailsScreen() {
   const { id } = useLocalSearchParams();
   const vendor = mockVendors.find((v) => v.id === id) as Vendor;
+  const { isFavorited, toggleFavoriteVendor, loadFavorites } =
+    useFavoritesStore();
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isFavorited, setIsFavorited] = useState(false);
   const [expandedReviews, setExpandedReviews] = useState<string[]>([]);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -39,6 +41,11 @@ export default function VendorDetailsScreen() {
   const [imageErrorStates, setImageErrorStates] = useState<{
     [key: string]: boolean;
   }>({});
+
+  // Load favorites when component mounts
+  useEffect(() => {
+    loadFavorites();
+  }, [loadFavorites]);
 
   if (!vendor) {
     return null;
@@ -437,10 +444,10 @@ export default function VendorDetailsScreen() {
         <View style={styles.navRightButtons}>
           <TouchableOpacity
             style={[styles.navButton, !isScrolled && styles.navButtonWithBg]}
-            onPress={() => setIsFavorited(!isFavorited)}
+            onPress={() => toggleFavoriteVendor(vendor.id)}
           >
             <Ionicons
-              name={isFavorited ? "heart" : "heart-outline"}
+              name={isFavorited(vendor.id) ? "heart" : "heart-outline"}
               size={rf(22)}
               color={isScrolled ? "#000000" : "#000000"}
             />

@@ -2,6 +2,7 @@ import { VendorCard } from "@/components/VendorCard";
 import { SearchResultsFilterModal } from "@/components/search/SearchResultsFilterModal";
 import { getLineHeight, rf, rs } from "@/constants/Responsive";
 import { mockVendors } from "@/data/mockData";
+import { useFavoritesStore } from "@/stores/favoritesStore";
 import { useSearchStore } from "@/stores/searchStore";
 import { Vendor, VendorCategory } from "@/types";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,8 +23,8 @@ import {
 export default function SearchResultsScreen() {
   const params = useLocalSearchParams();
   const { location, date, service } = params;
+  const { loadFavorites } = useFavoritesStore();
 
-  const [favoriteVendors, setFavoriteVendors] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
 
@@ -35,6 +36,9 @@ export default function SearchResultsScreen() {
   const { addRecentSearch } = useSearchStore();
 
   useEffect(() => {
+    // Load favorites
+    loadFavorites();
+
     // Add to recent searches when page loads
     if (location && date && service) {
       addRecentSearch({
@@ -58,7 +62,7 @@ export default function SearchResultsScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [loadFavorites]);
 
   // Filter vendors based on search criteria
   const filteredVendors = useMemo(() => {
@@ -116,15 +120,6 @@ export default function SearchResultsScreen() {
     });
   };
 
-  const handleFavoritePress = (vendorId: string) => {
-    setFavoriteVendors((prev) => {
-      if (prev.includes(vendorId)) {
-        return prev.filter((id) => id !== vendorId);
-      }
-      return [...prev, vendorId];
-    });
-  };
-
   const renderVendorCard = ({ item }: { item: Vendor }) => (
     <Animated.View
       style={[
@@ -135,12 +130,7 @@ export default function SearchResultsScreen() {
         },
       ]}
     >
-      <VendorCard
-        vendor={item}
-        onPress={() => handleVendorPress(item)}
-        onFavoritePress={handleFavoritePress}
-        isFavorited={favoriteVendors.includes(item.id)}
-      />
+      <VendorCard vendor={item} onPress={() => handleVendorPress(item)} />
     </Animated.View>
   );
 

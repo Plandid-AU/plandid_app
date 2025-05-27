@@ -6,15 +6,33 @@ import {
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import React, { useEffect } from "react";
 import "react-native-reanimated";
 
+import { mockVendors } from "@/data/mockData";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { initDatabase, seedDatabase } from "@/utils/database";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
+
+  // Initialize database on app start
+  useEffect(() => {
+    const setupDatabase = async () => {
+      try {
+        await initDatabase();
+        await seedDatabase(mockVendors);
+        console.log("Database initialized and seeded successfully");
+      } catch (error) {
+        console.error("Failed to initialize database:", error);
+      }
+    };
+
+    setupDatabase();
+  }, []);
 
   if (!loaded) {
     // Async font loading only occurs in development.
