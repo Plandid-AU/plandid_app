@@ -5,7 +5,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { rf, rs } from "@/constants/Responsive";
 import { mockChats } from "@/data/mockChats";
 import { useTheme } from "@/hooks/useTheme";
-import { Chat, Message } from "@/types/chat";
+import { Attachment, Chat, Message } from "@/types/chat";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -48,7 +48,7 @@ const createStyles = (theme: any) =>
       alignItems: "center",
     },
     headerTitle: {
-      fontSize: rf(14),
+      fontSize: rf(16),
       fontWeight: "700",
       color: theme.colors.textPrimary,
     },
@@ -67,10 +67,11 @@ const createStyles = (theme: any) =>
     },
     messagesContainer: {
       flex: 1,
-      paddingHorizontal: rs(15),
+      paddingHorizontal: rs(12),
     },
     messagesList: {
-      paddingVertical: rs(12),
+      paddingVertical: rs(16),
+      flexGrow: 1,
     },
     emptyState: {
       flex: 1,
@@ -83,6 +84,7 @@ const createStyles = (theme: any) =>
       color: theme.colors.textMuted,
       textAlign: "center",
       marginTop: rs(16),
+      lineHeight: rf(24),
     },
   });
 
@@ -103,7 +105,19 @@ export default function ChatScreen() {
     }
   }, [id]);
 
-  const handleSendMessage = (messageText: string) => {
+  // Auto-scroll to bottom when new messages are added
+  useEffect(() => {
+    if (chat && chat.messages.length > 0) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [chat?.messages.length, chat]);
+
+  const handleSendMessage = (
+    messageText: string,
+    attachments?: Attachment[]
+  ) => {
     if (!chat) return;
 
     const newMessage: Message = {
@@ -112,6 +126,7 @@ export default function ChatScreen() {
       type: "sent",
       timestamp: new Date(),
       showTip: true,
+      attachments: attachments || [],
     };
 
     // Update the last message in the previous sent message to not show tip
@@ -122,17 +137,31 @@ export default function ChatScreen() {
       return msg;
     });
 
+    // Create display text for last message
+    let displayText = messageText;
+    if (attachments && attachments.length > 0) {
+      const imageCount = attachments.filter(
+        (att) => att.type === "image"
+      ).length;
+      const docCount = attachments.filter(
+        (att) => att.type === "document"
+      ).length;
+
+      if (imageCount > 0 && docCount > 0) {
+        displayText = messageText ? `${messageText} 📎📷` : "📎📷 Attachments";
+      } else if (imageCount > 0) {
+        displayText = messageText ? `${messageText} 📷` : "📷 Photo";
+      } else if (docCount > 0) {
+        displayText = messageText ? `${messageText} 📎` : "📎 Document";
+      }
+    }
+
     setChat({
       ...chat,
       messages: [...updatedMessages, newMessage],
-      lastMessage: messageText,
+      lastMessage: displayText,
       lastMessageTime: new Date(),
     });
-
-    // Scroll to bottom after sending message
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
   };
 
   const getInitials = (name: string) => {
@@ -195,7 +224,12 @@ export default function ChatScreen() {
     const showTip = !nextMessage || nextMessage.type !== item.type;
 
     return (
-      <ChatBubble message={item.text} type={item.type} showTip={showTip} />
+      <ChatBubble
+        message={item.text}
+        type={item.type}
+        showTip={showTip}
+        attachments={item.attachments}
+      />
     );
   };
 
@@ -245,9 +279,20 @@ export default function ChatScreen() {
               keyExtractor={(item) => item.id}
               contentContainerStyle={styles.messagesList}
               showsVerticalScrollIndicator={false}
-              onContentSizeChange={() =>
-                flatListRef.current?.scrollToEnd({ animated: false })
-              }
+              maintainVisibleContentPosition={{
+                minIndexForVisible: 0,
+                autoscrollToTopThreshold: 10,
+              }}
+              onContentSizeChange={() => {
+                // Only auto-scroll if user is near the bottom
+                flatListRef.current?.scrollToEnd({ animated: true });
+              }}
+              onLayout={() => {
+                // Scroll to bottom on initial layout
+                setTimeout(() => {
+                  flatListRef.current?.scrollToEnd({ animated: false });
+                }, 100);
+              }}
             />
           ) : (
             <View style={styles.emptyState}>

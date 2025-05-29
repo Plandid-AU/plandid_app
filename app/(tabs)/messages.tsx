@@ -22,16 +22,11 @@ const createStyles = (theme: any) =>
       backgroundColor: theme.colors.backgroundPrimary,
     },
     header: {
-      paddingHorizontal: rs(12),
-      paddingTop: rs(8),
-      paddingBottom: rs(8),
+      paddingHorizontal: theme.spacing["5xl"],
+      paddingVertical: theme.spacing["2xl"],
       backgroundColor: theme.colors.backgroundPrimary,
     },
     title: {
-      fontSize: rf(24),
-      fontWeight: "800",
-      color: theme.colors.textPrimary,
-      textAlign: "center",
       marginBottom: rs(16),
     },
     searchContainer: {
@@ -58,7 +53,6 @@ const createStyles = (theme: any) =>
     chatsList: {
       flex: 1,
       paddingHorizontal: rs(8),
-      paddingBottom: rs(16),
     },
     emptyState: {
       flex: 1,
@@ -142,7 +136,9 @@ export default function MessagesScreen() {
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <ThemedText style={styles.title}>Messages</ThemedText>
+        <ThemedText type="h3" style={styles.title}>
+          Messages
+        </ThemedText>
 
         {/* Search Bar */}
         <View style={styles.searchContainer}>

@@ -1,9 +1,19 @@
+export interface Attachment {
+  id: string;
+  type: "image" | "document";
+  uri: string;
+  name: string;
+  size?: number;
+  mimeType?: string;
+}
+
 export interface Message {
   id: string;
   text: string;
   type: "sent" | "received";
   timestamp: Date;
   showTip?: boolean;
+  attachments?: Attachment[];
 }
 
 export interface Chat {

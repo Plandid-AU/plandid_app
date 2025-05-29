@@ -1,8 +1,38 @@
-# Welcome to your Expo app 👋
+# PlanDid App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native app built with Expo for planning and vendor management.
 
-## Get started
+## Features
+
+### Chat System
+
+- **Multi-line Text Input**: Instagram-like text input with automatic height adjustment and scrolling
+  - Supports up to 1000 characters
+  - Automatic height expansion up to 120px
+  - Smooth scrolling when content exceeds maximum height
+- **File Upload Support**:
+
+  - 📷 **Camera**: Take photos directly from the app
+  - 🖼️ **Photo Library**: Select images from device gallery
+  - 📎 **Documents**: Upload any file type
+  - Preview attachments before sending
+  - Remove attachments with one tap
+
+- **Enhanced UI**:
+  - Larger, more visible plus icon (36px)
+  - Smooth animations and transitions
+  - Attachment previews with file size display
+  - Modern modal interface for upload options
+
+### Technical Implementation
+
+- TypeScript support with proper type definitions
+- Expo Image Picker and Document Picker integration
+- Proper permission handling for camera and media library
+- Responsive design with consistent spacing
+- Theme-aware styling
+
+## Getting Started
 
 1. Install dependencies
 
@@ -48,3 +78,18 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+## Permissions
+
+The app requires the following permissions:
+
+- Camera access (for taking photos)
+- Photo library access (for selecting images)
+- File system access (for document uploads)
+
+## Dependencies
+
+- expo-image-picker
+- expo-document-picker
+- @expo/vector-icons
+- react-native-reanimated
