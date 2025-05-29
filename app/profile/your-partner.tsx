@@ -1,3 +1,4 @@
+import { ConfirmationModal } from "@/components/ConfirmationModal";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
@@ -119,6 +120,7 @@ export default function YourPartnerScreen() {
 
   const [partnerName, setPartnerName] = useState("");
   const [hasChanges, setHasChanges] = useState(false);
+  const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
 
   // Load current partner data when component mounts
   useEffect(() => {
@@ -147,9 +149,22 @@ export default function YourPartnerScreen() {
   };
 
   const handleCancel = () => {
+    if (hasChanges) {
+      setShowCancelConfirmation(true);
+    } else {
+      router.back();
+    }
+  };
+
+  const handleConfirmCancel = () => {
     // Reset to original value
     setPartnerName(user?.partnerName || "");
+    setShowCancelConfirmation(false);
     router.back();
+  };
+
+  const handleCancelCancel = () => {
+    setShowCancelConfirmation(false);
   };
 
   const handleLinkAccount = () => {
@@ -245,28 +260,42 @@ export default function YourPartnerScreen() {
           </View>
         </ScrollView>
 
-        {/* Bottom Section */}
-        <View style={styles.bottomSection}>
-          <View style={styles.buttonContainer}>
-            <ThemedButton
-              title="Cancel"
-              variant="secondary"
-              size="base"
-              onPress={handleCancel}
-              style={styles.button}
-              disabled={isLoading}
-            />
-            <ThemedButton
-              title="Save"
-              variant="primary"
-              size="base"
-              onPress={handleSave}
-              style={styles.button}
-              disabled={isLoading || !hasChanges}
-              loading={isLoading}
-            />
+        {/* Bottom Section - Only show when changes are made */}
+        {hasChanges && (
+          <View style={styles.bottomSection}>
+            <View style={styles.buttonContainer}>
+              <ThemedButton
+                title="Cancel"
+                variant="secondary"
+                size="base"
+                onPress={handleCancel}
+                style={styles.button}
+                disabled={isLoading}
+              />
+              <ThemedButton
+                title="Save"
+                variant="primary"
+                size="base"
+                onPress={handleSave}
+                style={styles.button}
+                disabled={isLoading || !hasChanges}
+                loading={isLoading}
+              />
+            </View>
           </View>
-        </View>
+        )}
+
+        {/* Cancel Confirmation Modal */}
+        <ConfirmationModal
+          visible={showCancelConfirmation}
+          title="Unsaved Changes"
+          message="You have unsaved changes. Are you sure you want to cancel? Nothing will be saved."
+          confirmText="Yes, Cancel"
+          cancelText="Stay"
+          onConfirm={handleConfirmCancel}
+          onCancel={handleCancelCancel}
+          confirmStyle="destructive"
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
