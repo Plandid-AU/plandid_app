@@ -1,7 +1,8 @@
 import { SuperlikeButton } from "@/components/SuperlikeButton";
 import { getLineHeight, rf, rh, rs } from "@/constants/Responsive";
-import { mockUser, mockVendors } from "@/data/mockData";
+import { mockVendors } from "@/data/mockData";
 import { useFavoritesStore } from "@/stores/favoritesStore";
+import { useUserStore } from "@/stores/userStore";
 import { Vendor } from "@/types";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -30,6 +31,7 @@ export default function VendorDetailsScreen() {
   const { id } = useLocalSearchParams();
   const vendor = mockVendors.find((v) => v.id === id) as Vendor;
   const { loadFavorites } = useFavoritesStore();
+  const { user, loadUser } = useUserStore();
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [expandedReviews, setExpandedReviews] = useState<string[]>([]);
@@ -42,21 +44,31 @@ export default function VendorDetailsScreen() {
     [key: string]: boolean;
   }>({});
 
-  // Load favorites when component mounts
+  // Load favorites and user data when component mounts
   useEffect(() => {
     loadFavorites();
-  }, [loadFavorites]);
+    loadUser("current-user");
+  }, [loadFavorites, loadUser]);
 
   if (!vendor) {
     return null;
   }
 
-  const hasWeddingDate = !!mockUser.weddingDate;
+  const hasWeddingDate = !!user?.weddingDate;
   const isAvailableOnDate =
     hasWeddingDate &&
-    vendor.availability?.some(
-      (date) => date.getTime() === mockUser.weddingDate?.getTime()
-    );
+    vendor.availability?.some((date) => {
+      if (!user?.weddingDate) return false;
+      const userDate =
+        typeof user.weddingDate === "string"
+          ? new Date(user.weddingDate)
+          : user.weddingDate;
+      return (
+        userDate instanceof Date &&
+        !isNaN(userDate.getTime()) &&
+        date.getTime() === userDate.getTime()
+      );
+    });
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
@@ -231,12 +243,24 @@ export default function VendorDetailsScreen() {
                 <Text style={styles.sectionTitle}>Confirmed Availability</Text>
                 <Text style={styles.availabilityText}>
                   {isAvailableOnDate
-                    ? `${
-                        vendor.name
-                      } is available on your wedding day!\n${mockUser.weddingDate?.toLocaleDateString(
-                        "en-US",
-                        { day: "numeric", month: "short", year: "numeric" }
-                      )}`
+                    ? `${vendor.name} is available on your wedding day!\n${
+                        user?.weddingDate
+                          ? (() => {
+                              const date =
+                                typeof user.weddingDate === "string"
+                                  ? new Date(user.weddingDate)
+                                  : user.weddingDate;
+                              return date instanceof Date &&
+                                !isNaN(date.getTime())
+                                ? date.toLocaleDateString("en-US", {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric",
+                                  })
+                                : "";
+                            })()
+                          : ""
+                      }`
                     : `${vendor.name} is not available on your wedding date`}
                 </Text>
               </View>

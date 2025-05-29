@@ -1,9 +1,11 @@
+import { ConfirmationModal } from "@/components/ConfirmationModal";
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { useTheme } from "@/hooks/useTheme";
+import { useUserStore } from "@/stores/userStore";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -92,6 +94,8 @@ interface FormErrors {
 export default function YourDetailsScreen() {
   const theme = useTheme();
   const styles = createStyles(theme);
+  const { user, updateUserPersonalDetails, loadUser, isLoading } =
+    useUserStore();
 
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -100,8 +104,16 @@ export default function YourDetailsScreen() {
     password: "",
   });
 
+  const [originalData, setOriginalData] = useState<FormData>({
+    name: "",
+    email: "",
+    phoneNumber: "",
+    password: "",
+  });
+
   const [errors, setErrors] = useState<FormErrors>({});
-  const [isLoading, setIsLoading] = useState(false);
+  const [changesMade, setChangesMade] = useState(false);
+  const [showCancelConfirmation, setShowCancelConfirmation] = useState(false);
 
   const handleBack = () => {
     router.back();
@@ -141,27 +153,46 @@ export default function YourDetailsScreen() {
       return;
     }
 
-    setIsLoading(true);
-
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Update user personal details through the store
+      await updateUserPersonalDetails(
+        formData.name,
+        formData.email,
+        formData.phoneNumber
+      );
 
-      // Here you would typically save the data to your backend
-      console.log("Saving user details:", formData);
+      // Update original data to reflect saved state
+      setOriginalData({
+        name: formData.name,
+        email: formData.email,
+        phoneNumber: formData.phoneNumber,
+        password: "",
+      });
+      setChangesMade(false);
 
-      // Navigate back or show success message
+      // Navigate back
       router.back();
     } catch (error) {
       console.error("Error saving details:", error);
       // Handle error (show toast, etc.)
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const handleCancel = () => {
+    if (changesMade) {
+      setShowCancelConfirmation(true);
+    } else {
+      router.back();
+    }
+  };
+
+  const handleConfirmCancel = () => {
+    setShowCancelConfirmation(false);
     router.back();
+  };
+
+  const handleCancelCancel = () => {
+    setShowCancelConfirmation(false);
   };
 
   const updateFormData = (field: keyof FormData, value: string) => {
@@ -172,6 +203,35 @@ export default function YourDetailsScreen() {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
+
+  useEffect(() => {
+    // Load user data on mount
+    loadUser("current-user");
+  }, [loadUser]);
+
+  useEffect(() => {
+    // Update form data when user data is loaded
+    if (user) {
+      const userData = {
+        name: user.name || "",
+        email: user.email || "",
+        phoneNumber: user.phoneNumber || "",
+        password: "", // Don't show actual password
+      };
+      setFormData(userData);
+      setOriginalData(userData);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    // Check if changes were made
+    const hasChanges =
+      formData.name !== originalData.name ||
+      formData.email !== originalData.email ||
+      formData.phoneNumber !== originalData.phoneNumber ||
+      (formData.password !== "" && formData.password !== originalData.password);
+    setChangesMade(hasChanges);
+  }, [formData, originalData]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -247,27 +307,41 @@ export default function YourDetailsScreen() {
         </ScrollView>
 
         {/* Button Container */}
-        <View style={styles.buttonContainer}>
-          <View style={styles.buttonRow}>
-            <View style={styles.buttonHalf}>
-              <ThemedButton
-                title="Cancel"
-                variant="secondary"
-                onPress={handleCancel}
-                disabled={isLoading}
-              />
-            </View>
-            <View style={styles.buttonHalf}>
-              <ThemedButton
-                title="Save"
-                variant="primary"
-                onPress={handleSave}
-                loading={isLoading}
-                disabled={isLoading}
-              />
+        {changesMade && (
+          <View style={styles.buttonContainer}>
+            <View style={styles.buttonRow}>
+              <View style={styles.buttonHalf}>
+                <ThemedButton
+                  title="Cancel"
+                  variant="secondary"
+                  onPress={handleCancel}
+                  disabled={isLoading}
+                />
+              </View>
+              <View style={styles.buttonHalf}>
+                <ThemedButton
+                  title="Save"
+                  variant="primary"
+                  onPress={handleSave}
+                  loading={isLoading}
+                  disabled={isLoading}
+                />
+              </View>
             </View>
           </View>
-        </View>
+        )}
+
+        {/* Cancel Confirmation Modal */}
+        <ConfirmationModal
+          visible={showCancelConfirmation}
+          title="Unsaved Changes"
+          message="You have unsaved changes. Are you sure you want to cancel? Nothing will be saved."
+          confirmText="Yes, Cancel"
+          cancelText="Stay"
+          onConfirm={handleConfirmCancel}
+          onCancel={handleCancelCancel}
+          confirmStyle="destructive"
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

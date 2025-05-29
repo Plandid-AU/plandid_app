@@ -1,4 +1,3 @@
-import { mockUser } from "@/data/mockData";
 import {
   getUserFavorites,
   getUserPreferences,
@@ -24,19 +23,23 @@ interface FavoritesState {
   hasCompletedFirstSuperlike: boolean;
 
   // Actions
-  loadFavorites: () => Promise<void>;
-  loadUserPreferences: () => Promise<void>;
-  toggleFavoriteVendor: (vendorId: string) => Promise<void>;
+  loadFavorites: (userId?: string) => Promise<void>;
+  loadUserPreferences: (userId?: string) => Promise<void>;
+  toggleFavoriteVendor: (vendorId: string, userId?: string) => Promise<void>;
   toggleSuperlikeVendor: (
-    vendorId: string
+    vendorId: string,
+    userId?: string
   ) => Promise<{ isSuperliked: boolean; isFavorited: boolean }>;
   isFavorited: (vendorId: string) => boolean;
   isSuperliked: (vendorId: string) => boolean;
   markTooltipSeen: (
-    tooltipType: "superlike" | "undoSuperlike"
+    tooltipType: "superlike" | "undoSuperlike",
+    userId?: string
   ) => Promise<void>;
   clearError: () => void;
 }
+
+const DEFAULT_USER_ID = "current-user";
 
 export const useFavoritesStore = create<FavoritesState>()(
   persist(
@@ -51,12 +54,12 @@ export const useFavoritesStore = create<FavoritesState>()(
       hasCompletedFirstSuperlike: false,
 
       // Actions
-      loadFavorites: async () => {
+      loadFavorites: async (userId = DEFAULT_USER_ID) => {
         try {
           set({ isLoading: true, error: null });
           const [favorites, superlikes] = await Promise.all([
-            getUserFavorites(mockUser.id),
-            getUserSuperlikes(mockUser.id),
+            getUserFavorites(userId),
+            getUserSuperlikes(userId),
           ]);
           set({
             favoriteVendors: favorites,
@@ -72,9 +75,9 @@ export const useFavoritesStore = create<FavoritesState>()(
         }
       },
 
-      loadUserPreferences: async () => {
+      loadUserPreferences: async (userId = DEFAULT_USER_ID) => {
         try {
-          const preferences = await getUserPreferences(mockUser.id);
+          const preferences = await getUserPreferences(userId);
           set({
             hasSeenSuperlikeTooltip: preferences.hasSeenSuperlikeTooltip,
             hasSeenUndoSuperlikeTooltip:
@@ -86,96 +89,82 @@ export const useFavoritesStore = create<FavoritesState>()(
         }
       },
 
-      toggleFavoriteVendor: async (vendorId: string) => {
+      toggleFavoriteVendor: async (
+        vendorId: string,
+        userId = DEFAULT_USER_ID
+      ) => {
         try {
-          set({ error: null });
+          set({ isLoading: true, error: null });
 
-          // Optimistically update the UI
-          const currentFavorites = get().favoriteVendors;
-          const currentSuperlikes = get().superlikedVendors;
-          const isCurrentlyFavorited = currentFavorites.includes(vendorId);
+          const isFavorited = await toggleFavorite(userId, vendorId);
 
-          let newFavorites: string[];
-          let newSuperlikes: string[];
-
-          if (isCurrentlyFavorited) {
-            // Remove from both favorites and superlikes
-            newFavorites = currentFavorites.filter((id) => id !== vendorId);
-            newSuperlikes = currentSuperlikes.filter((id) => id !== vendorId);
-          } else {
-            // Add to favorites only
-            newFavorites = [...currentFavorites, vendorId];
-            newSuperlikes = currentSuperlikes;
-          }
-
-          set({
-            favoriteVendors: newFavorites,
-            superlikedVendors: newSuperlikes,
-          });
-
-          // Sync with database
-          const isFavorited = await toggleFavorite(mockUser.id, vendorId);
-
-          // Verify the database state matches our optimistic update
-          if (isFavorited !== !isCurrentlyFavorited) {
-            // If there's a mismatch, reload from database
-            await get().loadFavorites();
-          }
+          set((state) => ({
+            favoriteVendors: isFavorited
+              ? [...state.favoriteVendors, vendorId]
+              : state.favoriteVendors.filter((id) => id !== vendorId),
+            isLoading: false,
+          }));
         } catch (error) {
           console.error("Error toggling favorite:", error);
-          set({ error: "Failed to update favorite" });
-
-          // Reload favorites from database on error
-          await get().loadFavorites();
+          set({
+            error: "Failed to update favorite",
+            isLoading: false,
+          });
         }
       },
 
-      toggleSuperlikeVendor: async (vendorId: string) => {
+      toggleSuperlikeVendor: async (
+        vendorId: string,
+        userId = DEFAULT_USER_ID
+      ) => {
         try {
-          set({ error: null });
+          set({ isLoading: true, error: null });
 
-          // Optimistically update the UI
-          const currentFavorites = get().favoriteVendors;
-          const currentSuperlikes = get().superlikedVendors;
-          const isCurrentlySuperliked = currentSuperlikes.includes(vendorId);
+          const result = await toggleSuperlike(userId, vendorId);
 
-          let newFavorites: string[];
-          let newSuperlikes: string[];
+          set((state) => {
+            const newFavorites = result.isFavorited
+              ? state.favoriteVendors.includes(vendorId)
+                ? state.favoriteVendors
+                : [...state.favoriteVendors, vendorId]
+              : state.favoriteVendors.filter((id) => id !== vendorId);
 
-          if (isCurrentlySuperliked) {
-            // Remove from superlikes, keep in favorites
-            newFavorites = currentFavorites.includes(vendorId)
-              ? currentFavorites
-              : [...currentFavorites, vendorId];
-            newSuperlikes = currentSuperlikes.filter((id) => id !== vendorId);
-          } else {
-            // Add to both favorites and superlikes
-            newFavorites = currentFavorites.includes(vendorId)
-              ? currentFavorites
-              : [...currentFavorites, vendorId];
-            newSuperlikes = [...currentSuperlikes, vendorId];
-          }
+            const newSuperlikes = result.isSuperliked
+              ? state.superlikedVendors.includes(vendorId)
+                ? state.superlikedVendors
+                : [...state.superlikedVendors, vendorId]
+              : state.superlikedVendors.filter((id) => id !== vendorId);
 
-          set({
-            favoriteVendors: newFavorites,
-            superlikedVendors: newSuperlikes,
+            let newHasCompletedFirstSuperlike =
+              state.hasCompletedFirstSuperlike;
+
+            // Mark first superlike as completed if this is a new superlike
+            if (result.isSuperliked && !state.hasCompletedFirstSuperlike) {
+              newHasCompletedFirstSuperlike = true;
+              // Update in database
+              updateUserPreference(
+                userId,
+                "hasCompletedFirstSuperlike",
+                true
+              ).catch(console.error);
+            }
+
+            return {
+              ...state,
+              favoriteVendors: newFavorites,
+              superlikedVendors: newSuperlikes,
+              hasCompletedFirstSuperlike: newHasCompletedFirstSuperlike,
+              isLoading: false,
+            };
           });
-
-          // Sync with database
-          const result = await toggleSuperlike(mockUser.id, vendorId);
-
-          // Update preferences if this was the first superlike
-          if (result.isSuperliked && !get().hasCompletedFirstSuperlike) {
-            set({ hasCompletedFirstSuperlike: true });
-          }
 
           return result;
         } catch (error) {
           console.error("Error toggling superlike:", error);
-          set({ error: "Failed to update superlike" });
-
-          // Reload favorites from database on error
-          await get().loadFavorites();
+          set({
+            error: "Failed to update superlike",
+            isLoading: false,
+          });
           return { isSuperliked: false, isFavorited: false };
         }
       },
@@ -188,14 +177,17 @@ export const useFavoritesStore = create<FavoritesState>()(
         return get().superlikedVendors.includes(vendorId);
       },
 
-      markTooltipSeen: async (tooltipType: "superlike" | "undoSuperlike") => {
+      markTooltipSeen: async (
+        tooltipType: "superlike" | "undoSuperlike",
+        userId = DEFAULT_USER_ID
+      ) => {
         try {
           const preference =
             tooltipType === "superlike"
               ? "hasSeenSuperlikeTooltip"
               : "hasSeenUndoSuperlikeTooltip";
 
-          await updateUserPreference(mockUser.id, preference, true);
+          await updateUserPreference(userId, preference, true);
 
           set({
             [preference]: true,

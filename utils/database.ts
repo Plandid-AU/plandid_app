@@ -76,6 +76,20 @@ const runMigrations = () => {
 export const initDatabase = () => {
   return new Promise<void>((resolve, reject) => {
     try {
+      // Users table
+      db.execSync(
+        `CREATE TABLE IF NOT EXISTS users (
+          id TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          email TEXT NOT NULL,
+          phoneNumber TEXT,
+          weddingDate TEXT,
+          weddingLocation TEXT,
+          createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        );`
+      );
+
       // Vendors table
       db.execSync(
         `CREATE TABLE IF NOT EXISTS vendors (
@@ -566,6 +580,166 @@ export const updateUserPreference = async (
       resolve();
     } catch (error) {
       console.error("Error updating user preference:", error);
+      reject(error);
+    }
+  });
+};
+
+// User management functions
+export const createOrUpdateUser = async (
+  id: string,
+  name: string,
+  email: string,
+  weddingDate?: Date,
+  weddingLocation?: string,
+  phoneNumber?: string
+): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    try {
+      console.log("Creating/updating user:", {
+        id,
+        name,
+        email,
+        weddingDate,
+        weddingLocation,
+        phoneNumber,
+      });
+      db.runSync(
+        `INSERT OR REPLACE INTO users (id, name, email, phoneNumber, weddingDate, weddingLocation, updatedAt) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+        [
+          id,
+          name,
+          email,
+          phoneNumber || null,
+          weddingDate ? weddingDate.toISOString() : null,
+          weddingLocation || null,
+        ]
+      );
+      console.log("User created/updated successfully");
+      resolve();
+    } catch (error) {
+      console.error("Error creating/updating user:", error);
+      reject(error);
+    }
+  });
+};
+
+export const getUser = async (
+  userId: string
+): Promise<{
+  id: string;
+  name: string;
+  email: string;
+  phoneNumber?: string;
+  weddingDate?: Date;
+  weddingLocation?: string;
+} | null> => {
+  return new Promise((resolve, reject) => {
+    try {
+      console.log("Getting user:", userId);
+      const result = db.getFirstSync(`SELECT * FROM users WHERE id = ?`, [
+        userId,
+      ]) as any;
+
+      if (result) {
+        console.log("User found:", result);
+        resolve({
+          id: result.id,
+          name: result.name,
+          email: result.email,
+          phoneNumber: result.phoneNumber || undefined,
+          weddingDate: result.weddingDate
+            ? new Date(result.weddingDate)
+            : undefined,
+          weddingLocation: result.weddingLocation || undefined,
+        });
+      } else {
+        console.log("User not found");
+        resolve(null);
+      }
+    } catch (error) {
+      console.error("Error getting user:", error);
+      reject(error);
+    }
+  });
+};
+
+export const updateUserWeddingDate = async (
+  userId: string,
+  weddingDate: Date
+): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    try {
+      console.log(
+        "Updating wedding date for user:",
+        userId,
+        "to:",
+        weddingDate
+      );
+      db.runSync(
+        `UPDATE users SET weddingDate = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?`,
+        [weddingDate.toISOString(), userId]
+      );
+      console.log("Wedding date updated successfully");
+      resolve();
+    } catch (error) {
+      console.error("Error updating wedding date:", error);
+      reject(error);
+    }
+  });
+};
+
+export const updateUserWeddingLocation = async (
+  userId: string,
+  weddingLocation: string
+): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    try {
+      console.log(
+        "Updating wedding location for user:",
+        userId,
+        "to:",
+        weddingLocation
+      );
+      db.runSync(
+        `UPDATE users SET weddingLocation = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?`,
+        [weddingLocation, userId]
+      );
+      console.log("Wedding location updated successfully");
+      resolve();
+    } catch (error) {
+      console.error("Error updating wedding location:", error);
+      reject(error);
+    }
+  });
+};
+
+export const updateUserPersonalDetails = async (
+  userId: string,
+  name: string,
+  email: string,
+  phoneNumber?: string
+): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    try {
+      console.log(
+        "Updating personal details for user:",
+        userId,
+        "name:",
+        name,
+        "email:",
+        email,
+        "phoneNumber:",
+        phoneNumber
+      );
+      db.runSync(
+        `UPDATE users SET name = ?, email = ?, phoneNumber = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?`,
+        [name, email, phoneNumber || null, userId]
+      );
+      console.log("Personal details updated successfully");
+      resolve();
+    } catch (error) {
+      console.error("Error updating personal details:", error);
       reject(error);
     }
   });
