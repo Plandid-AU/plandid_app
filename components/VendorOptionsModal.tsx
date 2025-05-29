@@ -37,7 +37,7 @@ const createStyles = (theme: any) =>
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: theme.colors.overlayDark,
+      backgroundColor: "rgba(31, 32, 36, 0.4)",
     },
     modal: {
       position: "absolute",
@@ -53,7 +53,8 @@ const createStyles = (theme: any) =>
       flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      padding: theme.spacing["2xl"],
+      paddingTop: theme.spacing["4xl"],
+      paddingBottom: theme.spacing["2xl"],
       paddingHorizontal: theme.spacing["5xl"],
     },
     closeButton: {
@@ -64,6 +65,7 @@ const createStyles = (theme: any) =>
     },
     optionsContainer: {
       paddingHorizontal: theme.spacing["3xl"],
+      paddingBottom: theme.spacing["2xl"],
     },
     option: {
       flexDirection: "row",
