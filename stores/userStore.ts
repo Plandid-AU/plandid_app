@@ -1,5 +1,6 @@
 import {
   createOrUpdateUser,
+  updateUserPartnerDetails as dbUpdateUserPartnerDetails,
   updateUserPersonalDetails as dbUpdateUserPersonalDetails,
   updateUserWeddingDate as dbUpdateWeddingDate,
   updateUserWeddingLocation as dbUpdateWeddingLocation,
@@ -16,6 +17,9 @@ export interface UserData {
   phoneNumber?: string;
   weddingDate?: Date | string;
   weddingLocation?: string;
+  partnerName?: string;
+  partnerEmail?: string;
+  isLinked?: boolean;
   favoriteVendors: string[];
 }
 
@@ -34,6 +38,11 @@ interface UserState {
     name: string,
     email: string,
     phoneNumber?: string
+  ) => Promise<void>;
+  updateUserPartnerDetails: (
+    partnerName?: string,
+    partnerEmail?: string,
+    isLinked?: boolean
   ) => Promise<void>;
   saveUserToDatabase: () => Promise<void>;
   clearUser: () => void;
@@ -100,7 +109,10 @@ export const useUserStore = create<UserState>()(
                 ? normalizedUser.weddingDate
                 : undefined,
               normalizedUser.weddingLocation,
-              normalizedUser.phoneNumber
+              normalizedUser.phoneNumber,
+              normalizedUser.partnerName,
+              normalizedUser.partnerEmail,
+              normalizedUser.isLinked
             );
             set({ user: normalizedUser, isLoading: false });
           }
@@ -198,6 +210,53 @@ export const useUserStore = create<UserState>()(
         }
       },
 
+      updateUserPartnerDetails: async (
+        partnerName?: string,
+        partnerEmail?: string,
+        isLinked?: boolean
+      ) => {
+        const currentUser = get().user;
+        if (!currentUser) return;
+
+        try {
+          set({ isLoading: true, error: null });
+
+          // Update in database
+          await dbUpdateUserPartnerDetails(
+            currentUser.id,
+            partnerName,
+            partnerEmail,
+            isLinked
+          );
+
+          // Update in store
+          set((state) => ({
+            user: state.user
+              ? {
+                  ...state.user,
+                  partnerName:
+                    partnerName !== undefined
+                      ? partnerName
+                      : state.user.partnerName,
+                  partnerEmail:
+                    partnerEmail !== undefined
+                      ? partnerEmail
+                      : state.user.partnerEmail,
+                  isLinked:
+                    isLinked !== undefined ? isLinked : state.user.isLinked,
+                }
+              : null,
+            isLoading: false,
+          }));
+        } catch (error) {
+          console.error("Error updating user partner details:", error);
+          set({
+            error: "Failed to update user partner details",
+            isLoading: false,
+          });
+        }
+      },
+
       saveUserToDatabase: async () => {
         const currentUser = get().user;
         if (!currentUser) return;
@@ -213,7 +272,10 @@ export const useUserStore = create<UserState>()(
               ? normalizedUser.weddingDate
               : undefined,
             normalizedUser.weddingLocation,
-            normalizedUser.phoneNumber
+            normalizedUser.phoneNumber,
+            normalizedUser.partnerName,
+            normalizedUser.partnerEmail,
+            normalizedUser.isLinked
           );
           set({ isLoading: false });
         } catch (error) {

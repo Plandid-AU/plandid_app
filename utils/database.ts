@@ -61,10 +61,45 @@ const runMigrations = () => {
       setSchemaVersion(1);
     }
 
+    // Migration 2: Add partner fields to users table
+    if (currentVersion < 2) {
+      console.log("Running migration 2: Adding partner fields...");
+
+      // Check if users table exists and has partner columns
+      const tableInfo = db.getAllSync(`PRAGMA table_info(users)`);
+      const hasPartnerNameColumn = tableInfo.some(
+        (column: any) => column.name === "partnerName"
+      );
+      const hasPartnerEmailColumn = tableInfo.some(
+        (column: any) => column.name === "partnerEmail"
+      );
+      const hasIsLinkedColumn = tableInfo.some(
+        (column: any) => column.name === "isLinked"
+      );
+
+      if (!hasPartnerNameColumn) {
+        db.execSync(`ALTER TABLE users ADD COLUMN partnerName TEXT`);
+        console.log("Migration 2: partnerName column added");
+      }
+
+      if (!hasPartnerEmailColumn) {
+        db.execSync(`ALTER TABLE users ADD COLUMN partnerEmail TEXT`);
+        console.log("Migration 2: partnerEmail column added");
+      }
+
+      if (!hasIsLinkedColumn) {
+        db.execSync(`ALTER TABLE users ADD COLUMN isLinked INTEGER DEFAULT 0`);
+        console.log("Migration 2: isLinked column added");
+      }
+
+      console.log("Migration 2 completed: partner fields added");
+      setSchemaVersion(2);
+    }
+
     // Future migrations can be added here
-    // if (currentVersion < 2) {
-    //   // Migration 2 code here
-    //   setSchemaVersion(2);
+    // if (currentVersion < 3) {
+    //   // Migration 3 code here
+    //   setSchemaVersion(3);
     // }
   } catch (error) {
     console.error("Error running migrations:", error);
@@ -592,7 +627,10 @@ export const createOrUpdateUser = async (
   email: string,
   weddingDate?: Date,
   weddingLocation?: string,
-  phoneNumber?: string
+  phoneNumber?: string,
+  partnerName?: string,
+  partnerEmail?: string,
+  isLinked?: boolean
 ): Promise<void> => {
   return new Promise((resolve, reject) => {
     try {
@@ -603,9 +641,12 @@ export const createOrUpdateUser = async (
         weddingDate,
         weddingLocation,
         phoneNumber,
+        partnerName,
+        partnerEmail,
+        isLinked,
       });
       db.runSync(
-        `INSERT OR REPLACE INTO users (id, name, email, phoneNumber, weddingDate, weddingLocation, updatedAt) VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+        `INSERT OR REPLACE INTO users (id, name, email, phoneNumber, weddingDate, weddingLocation, partnerName, partnerEmail, isLinked, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
         [
           id,
           name,
@@ -613,6 +654,9 @@ export const createOrUpdateUser = async (
           phoneNumber || null,
           weddingDate ? weddingDate.toISOString() : null,
           weddingLocation || null,
+          partnerName || null,
+          partnerEmail || null,
+          isLinked ? 1 : 0,
         ]
       );
       console.log("User created/updated successfully");
@@ -633,6 +677,9 @@ export const getUser = async (
   phoneNumber?: string;
   weddingDate?: Date;
   weddingLocation?: string;
+  partnerName?: string;
+  partnerEmail?: string;
+  isLinked?: boolean;
 } | null> => {
   return new Promise((resolve, reject) => {
     try {
@@ -652,6 +699,9 @@ export const getUser = async (
             ? new Date(result.weddingDate)
             : undefined,
           weddingLocation: result.weddingLocation || undefined,
+          partnerName: result.partnerName || undefined,
+          partnerEmail: result.partnerEmail || undefined,
+          isLinked: result.isLinked === 1,
         });
       } else {
         console.log("User not found");
@@ -740,6 +790,37 @@ export const updateUserPersonalDetails = async (
       resolve();
     } catch (error) {
       console.error("Error updating personal details:", error);
+      reject(error);
+    }
+  });
+};
+
+export const updateUserPartnerDetails = async (
+  userId: string,
+  partnerName?: string,
+  partnerEmail?: string,
+  isLinked?: boolean
+): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    try {
+      console.log(
+        "Updating partner details for user:",
+        userId,
+        "partnerName:",
+        partnerName,
+        "partnerEmail:",
+        partnerEmail,
+        "isLinked:",
+        isLinked
+      );
+      db.runSync(
+        `UPDATE users SET partnerName = ?, partnerEmail = ?, isLinked = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?`,
+        [partnerName || null, partnerEmail || null, isLinked ? 1 : 0, userId]
+      );
+      console.log("Partner details updated successfully");
+      resolve();
+    } catch (error) {
+      console.error("Error updating partner details:", error);
       reject(error);
     }
   });

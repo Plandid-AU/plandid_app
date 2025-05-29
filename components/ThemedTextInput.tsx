@@ -48,19 +48,23 @@ const createStyles = (theme: any) =>
       flexDirection: "row",
       alignItems: "center",
       paddingHorizontal: theme.spacing["2xl"],
-      paddingVertical: theme.spacing.xl,
+      paddingVertical: theme.spacing["2xl"],
       gap: theme.spacing.base,
+      minHeight: 56,
+      overflow: "hidden",
     },
     textInput: {
       flex: 1,
       fontFamily: theme.typography.fontFamily.primary,
       fontSize: theme.typography.fontSize.base,
       fontWeight: theme.typography.fontWeight.medium,
-      lineHeight: theme.typography.lineHeight.base,
+      lineHeight: Math.round(theme.typography.fontSize.base * 1.2),
       color: theme.colors.textPrimary,
       padding: 0,
       margin: 0,
       textAlignVertical: "center",
+      includeFontPadding: false,
+      height: Math.round(theme.typography.fontSize.base * 1.4),
     },
     placeholder: {
       color: theme.colors.textDisabled,
@@ -79,10 +83,12 @@ const createStyles = (theme: any) =>
     },
     // Size variants
     sizeSmall: {
-      paddingVertical: theme.spacing.base,
+      paddingVertical: theme.spacing.xl,
+      minHeight: 48,
     },
     sizeLarge: {
-      paddingVertical: theme.spacing["3xl"],
+      paddingVertical: theme.spacing["4xl"],
+      minHeight: 64,
     },
   });
 
@@ -178,17 +184,19 @@ export const ThemedTextInput = forwardRef<TextInput, ThemedTextInputProps>(
           <View style={[styles.contentContainer, getSizeStyle()]}>
             {leftIcon && <View style={styles.iconContainer}>{leftIcon}</View>}
 
-            <TextInput
-              ref={ref}
-              style={[styles.textInput, style]}
-              placeholderTextColor={theme.colors.textDisabled}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-              secureTextEntry={isPassword && !isPasswordVisible}
-              autoCapitalize={isPassword ? "none" : props.autoCapitalize}
-              autoCorrect={isPassword ? false : props.autoCorrect}
-              {...props}
-            />
+            <View style={{ flex: 1, justifyContent: "center" }}>
+              <TextInput
+                ref={ref}
+                style={[styles.textInput, style]}
+                placeholderTextColor={theme.colors.textDisabled}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                secureTextEntry={isPassword && !isPasswordVisible}
+                autoCapitalize={isPassword ? "none" : props.autoCapitalize}
+                autoCorrect={isPassword ? false : props.autoCorrect}
+                {...props}
+              />
+            </View>
 
             {isPassword && renderPasswordIcon()}
             {!isPassword && rightIcon && (
