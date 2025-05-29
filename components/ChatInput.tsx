@@ -3,13 +3,15 @@
  *
  * Features implemented following Instagram/WhatsApp best practices:
  * - Auto-expanding text input (1-5 lines maximum)
- * - Smooth height animations
+ * - Smooth height animations with spring physics
  * - Better cross-platform compatibility (iOS, Android, Web)
  * - Improved text alignment (center for single line, top for multiline)
  * - Smart paste handling for large text inputs
  * - Proper keyboard behavior (stays focused after sending)
  * - Line height optimized for readability
  * - Responsive design with proper padding and margins
+ * - Enhanced content size change detection
+ * - Better multiline detection and handling
  */
 
 import { rf, rs } from "@/constants/Responsive";
@@ -18,7 +20,7 @@ import { Attachment } from "@/types/chat";
 import { Ionicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
@@ -42,11 +44,20 @@ interface ChatInputProps {
 }
 
 // Constants for auto-expanding text input (following WhatsApp/Instagram patterns)
-const LINE_HEIGHT = rf(20); // Increased for better readability
-const VERTICAL_PADDING = rs(12); // Padding inside the input container
-const MIN_INPUT_HEIGHT = rs(44); // Minimum height (1 line + padding)
+const LINE_HEIGHT = Platform.OS === "ios" ? rf(20) : rf(22); // Match ChatBubble line height
+const VERTICAL_PADDING = rs(16); // Increased padding for better text spacing
+const HORIZONTAL_PADDING = rs(16);
+const MIN_INPUT_HEIGHT = rs(40); // Reduced minimum height
 const MAX_LINES = 5; // Maximum number of lines before scrolling
 const MAX_INPUT_HEIGHT = LINE_HEIGHT * MAX_LINES + VERTICAL_PADDING; // 5 lines max
+
+// Animation constants for smoother transitions
+const ANIMATION_DURATION = 150;
+const SPRING_CONFIG = {
+  tension: 300,
+  friction: 25,
+  useNativeDriver: false,
+};
 
 const createStyles = (theme: any) =>
   StyleSheet.create({
@@ -73,25 +84,31 @@ const createStyles = (theme: any) =>
       flex: 1,
       backgroundColor: theme.colors.backgroundSecondary,
       borderRadius: rs(20),
-      paddingHorizontal: rs(16),
-      paddingVertical: rs(6), // Reduced padding for better text alignment
+      paddingHorizontal: HORIZONTAL_PADDING,
+      paddingVertical: rs(10),
       minHeight: MIN_INPUT_HEIGHT,
       maxHeight: MAX_INPUT_HEIGHT,
-      justifyContent: "center",
+      justifyContent: "flex-start",
     },
     textInput: {
-      fontSize: rf(16), // Slightly larger for better readability
+      fontSize: rf(14),
       fontFamily: theme.typography.fontFamily.primary,
       color: theme.colors.textPrimary,
       lineHeight: LINE_HEIGHT,
       paddingVertical: 0,
       paddingHorizontal: 0,
       margin: 0,
-      textAlignVertical: "center", // Better alignment for single line
-      includeFontPadding: false, // Android-specific: removes extra padding
+      textAlignVertical: "top",
+      includeFontPadding: false,
+      minHeight: LINE_HEIGHT,
+      ...(Platform.OS === "web" &&
+        ({
+          outline: "none",
+          resize: "none",
+        } as any)),
     },
     textInputMultiline: {
-      textAlignVertical: "top", // Switch to top alignment when multiline
+      // Remove separate multiline styles - use consistent top alignment
     },
     sendButton: {
       width: rs(36),
@@ -215,6 +232,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const [inputHeight, setInputHeight] = useState(MIN_INPUT_HEIGHT);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isMultiline, setIsMultiline] = useState(false);
+  const [lineCount, setLineCount] = useState(1);
   const textInputRef = useRef<TextInput>(null);
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
@@ -258,128 +276,130 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       const newHeight = MIN_INPUT_HEIGHT;
       setInputHeight(newHeight);
       setIsMultiline(false);
+      setLineCount(1);
 
-      Animated.timing(heightAnim, {
+      Animated.spring(heightAnim, {
         toValue: newHeight,
-        duration: 150,
-        useNativeDriver: false,
+        ...SPRING_CONFIG,
       }).start();
     }
   }, [message]);
 
-  const handleSend = () => {
+  const handleSend = useCallback(() => {
     if (message.trim() || attachments.length > 0) {
       onSendMessage(message.trim(), attachments);
       setMessage("");
       setAttachments([]);
       // Height will be reset by the useEffect above
 
-      // Blur the input to dismiss keyboard if needed
-      textInputRef.current?.blur();
-
-      // Small delay before refocusing to ensure smooth transition
-      setTimeout(() => {
-        textInputRef.current?.focus();
-      }, 100);
+      // Keep focus for better UX (like WhatsApp)
+      if (Platform.OS !== "web") {
+        // Small delay to ensure smooth transition
+        setTimeout(() => {
+          textInputRef.current?.focus();
+        }, 50);
+      }
     }
-  };
+  }, [message, attachments, onSendMessage]);
 
-  const calculateOptimalHeight = (contentHeight: number): number => {
-    // Calculate the number of lines based on content height
-    const estimatedLines = Math.max(1, Math.ceil(contentHeight / LINE_HEIGHT));
+  const calculateOptimalHeight = useCallback((text: string): number => {
+    // Simple and reliable line counting
+    const lines = text.split("\n");
+    const lineCount = Math.max(1, lines.length);
 
     // Ensure we don't exceed max lines
-    const actualLines = Math.min(estimatedLines, MAX_LINES);
+    const actualLines = Math.min(lineCount, MAX_LINES);
 
-    // Calculate height: (lines * line height) + vertical padding
-    const calculatedHeight = actualLines * LINE_HEIGHT + VERTICAL_PADDING;
+    // Update line count state
+    setLineCount(actualLines);
+
+    // Simple height calculation: base height + (additional lines * line height)
+    const calculatedHeight = MIN_INPUT_HEIGHT + (actualLines - 1) * LINE_HEIGHT;
 
     // Ensure we stay within bounds
     return Math.max(
       MIN_INPUT_HEIGHT,
       Math.min(calculatedHeight, MAX_INPUT_HEIGHT)
     );
-  };
+  }, []);
 
-  const handleContentSizeChange = (event: any) => {
-    const { height: contentHeight } = event.nativeEvent.contentSize;
+  const handleContentSizeChange = useCallback(
+    (event: any) => {
+      const { height: contentHeight } = event.nativeEvent.contentSize;
 
-    // Calculate optimal height
-    const newHeight = calculateOptimalHeight(contentHeight);
+      // Calculate optimal height
+      const newHeight = calculateOptimalHeight(message);
 
-    // Determine if we're in multiline mode
-    const newIsMultiline = newHeight > MIN_INPUT_HEIGHT;
+      // Determine if we're in multiline mode
+      const newIsMultiline = lineCount > 1;
 
-    // Only update if height actually changed
-    if (newHeight !== inputHeight) {
-      setInputHeight(newHeight);
+      // Only update if height actually changed
+      if (newHeight !== inputHeight) {
+        setInputHeight(newHeight);
 
-      // Smooth animation for height changes
-      Animated.timing(heightAnim, {
-        toValue: newHeight,
-        duration: 100, // Quick but smooth
-        useNativeDriver: false,
-      }).start();
-    }
+        // Smooth spring animation for height changes (like WhatsApp)
+        Animated.spring(heightAnim, {
+          toValue: newHeight,
+          ...SPRING_CONFIG,
+        }).start();
+      }
 
-    // Update multiline state if needed
-    if (newIsMultiline !== isMultiline) {
-      setIsMultiline(newIsMultiline);
-    }
-  };
+      // Update multiline state if needed
+      if (newIsMultiline !== isMultiline) {
+        setIsMultiline(newIsMultiline);
+      }
+    },
+    [inputHeight, isMultiline, lineCount, message, calculateOptimalHeight]
+  );
 
   // Handle text changes for better cross-platform compatibility
-  const handleTextChange = (text: string) => {
-    setMessage(text);
+  const handleTextChange = useCallback(
+    (text: string) => {
+      // Smart line break prevention logic
+      const trimmedText = text.trim();
 
-    // For web platform, we need to manually trigger height recalculation
-    if (Platform.OS === "web" && textInputRef.current) {
-      // Small delay to ensure DOM is updated
-      setTimeout(() => {
-        const element = textInputRef.current as any;
-        if (element && element.scrollHeight) {
-          const contentHeight = element.scrollHeight;
-          const newHeight = calculateOptimalHeight(contentHeight);
+      // Case 1: Prevent starting with line breaks (empty input + line break)
+      if (message.trim() === "" && text.startsWith("\n")) {
+        return; // Don't allow line breaks on empty input
+      }
 
-          if (newHeight !== inputHeight) {
-            setInputHeight(newHeight);
-            setIsMultiline(newHeight > MIN_INPUT_HEIGHT);
+      // Case 2: Prevent multiple consecutive line breaks (more than 2)
+      if (text.includes("\n\n\n")) {
+        // Replace triple+ line breaks with double line breaks
+        text = text.replace(/\n{3,}/g, "\n\n");
+      }
 
-            Animated.timing(heightAnim, {
-              toValue: newHeight,
-              duration: 100,
-              useNativeDriver: false,
-            }).start();
-          }
-        }
-      }, 0);
-    }
+      // Case 3: If the entire text is just line breaks, ignore it
+      if (trimmedText === "" && text.includes("\n")) {
+        return; // Don't allow text that's only line breaks
+      }
 
-    // Handle large text pastes by immediately checking if we need to expand
-    if (text.length > message.length + 10) {
-      // Likely a paste operation
-      setTimeout(() => {
-        // Force a content size change check
-        if (textInputRef.current && Platform.OS !== "web") {
-          const lines = text.split("\n").length;
-          const estimatedHeight = calculateOptimalHeight(lines * LINE_HEIGHT);
+      setMessage(text);
 
-          if (estimatedHeight !== inputHeight) {
-            setInputHeight(estimatedHeight);
-            setIsMultiline(estimatedHeight > MIN_INPUT_HEIGHT);
+      // Immediate height calculation based on text
+      const newHeight = calculateOptimalHeight(text);
+      const textLines = text.split("\n").length;
+      const newIsMultiline = textLines > 1;
 
-            Animated.timing(heightAnim, {
-              toValue: estimatedHeight,
-              duration: 150,
-              useNativeDriver: false,
-            }).start();
-          }
-        }
-      }, 50);
-    }
-  };
+      // Update states
+      if (newIsMultiline !== isMultiline) {
+        setIsMultiline(newIsMultiline);
+      }
 
-  const animateButton = () => {
+      // Update height if changed
+      if (newHeight !== inputHeight) {
+        setInputHeight(newHeight);
+
+        Animated.spring(heightAnim, {
+          toValue: newHeight,
+          ...SPRING_CONFIG,
+        }).start();
+      }
+    },
+    [message, isMultiline, inputHeight, calculateOptimalHeight]
+  );
+
+  const animateButton = useCallback(() => {
     Animated.sequence([
       Animated.timing(scaleAnim, {
         toValue: 0.9,
@@ -392,32 +412,17 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         useNativeDriver: true,
       }),
     ]).start();
-  };
+  }, [scaleAnim]);
 
-  const handleAddPress = () => {
+  const handleAddPress = useCallback(() => {
     if (isProcessing) return;
     animateButton();
     setShowUploadModal(true);
-  };
+  }, [isProcessing, animateButton]);
 
-  const handleCloseModal = () => {
-    if (isProcessing) return;
-
-    Animated.parallel([
-      Animated.timing(overlayOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: SCREEN_HEIGHT,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setShowUploadModal(false);
-    });
-  };
+  const handleCloseModal = useCallback(() => {
+    setShowUploadModal(false);
+  }, []);
 
   const requestMediaLibraryPermissions = async (): Promise<boolean> => {
     try {
@@ -668,19 +673,26 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         <Animated.View style={[styles.inputContainer, { height: heightAnim }]}>
           <TextInput
             ref={textInputRef}
-            style={[styles.textInput, isMultiline && styles.textInputMultiline]}
+            style={styles.textInput}
             value={message}
             onChangeText={handleTextChange}
             placeholder={placeholder}
             placeholderTextColor={theme.colors.textDisabled}
-            multiline
+            multiline={true}
             maxLength={1000}
             onContentSizeChange={handleContentSizeChange}
-            scrollEnabled={inputHeight >= MAX_INPUT_HEIGHT}
-            textAlignVertical={isMultiline ? "top" : "center"}
+            scrollEnabled={lineCount >= MAX_LINES}
+            textAlignVertical="top"
             editable={!isProcessing}
-            blurOnSubmit={false} // Prevents keyboard from closing on enter
-            returnKeyType="default" // Allow line breaks with enter
+            blurOnSubmit={false}
+            returnKeyType="default"
+            enablesReturnKeyAutomatically={false}
+            autoCorrect={true}
+            autoCapitalize="sentences"
+            spellCheck={true}
+            keyboardType="default"
+            submitBehavior="newline"
+            selection={undefined}
           />
         </Animated.View>
 

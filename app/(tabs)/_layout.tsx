@@ -14,9 +14,8 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: "#FFFFFF",
           borderTopWidth: 0,
-          paddingTop: rs(16),
           paddingBottom: rs(42),
-          height: rh(102),
+          height: rh(96),
         },
         tabBarLabelStyle: {
           fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
