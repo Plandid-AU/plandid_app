@@ -50,7 +50,6 @@ const createStyles = (theme: any) =>
     content: {
       flex: 1,
       paddingHorizontal: theme.spacing["5xl"],
-      paddingTop: theme.spacing["2xl"],
     },
     titleSection: {
       gap: theme.spacing.base,
@@ -60,8 +59,9 @@ const createStyles = (theme: any) =>
       color: theme.colors.textMuted,
     },
     formSection: {
-      gap: theme.spacing["4xl"],
+      gap: theme.spacing["2xl"],
       flex: 1,
+      paddingTop: theme.spacing["2xl"],
       paddingBottom: theme.spacing["6xl"],
     },
     inputGroup: {
