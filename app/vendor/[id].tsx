@@ -1,9 +1,11 @@
 import { SuperlikeButton } from "@/components/SuperlikeButton";
 import { getLineHeight, rf, rh, rs } from "@/constants/Responsive";
+import { mockChats } from "@/data/mockChats";
 import { mockVendors } from "@/data/mockData";
 import { useFavoritesStore } from "@/stores/favoritesStore";
 import { useUserStore } from "@/stores/userStore";
 import { Vendor } from "@/types";
+import { Chat } from "@/types/chat";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -87,10 +89,21 @@ export default function VendorDetailsScreen() {
   };
 
   const handleMessage = () => {
-    router.push({
-      pathname: "/messaging/[vendorId]",
-      params: { vendorId: vendor.id },
-    });
+    // Check if user has already messaged this vendor
+    const existingChat = mockChats.find(
+      (chat: Chat) => chat.vendorId === vendor.id
+    );
+
+    if (existingChat) {
+      // Redirect to existing chat
+      router.push(`/chat/${existingChat.id}`);
+    } else {
+      // Start new messaging flow
+      router.push({
+        pathname: "/messaging/[vendorId]",
+        params: { vendorId: vendor.id },
+      });
+    }
   };
 
   const toggleReviewExpanded = (reviewId: string) => {

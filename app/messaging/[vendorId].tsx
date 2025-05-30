@@ -58,6 +58,7 @@ const createStyles = (theme: any) =>
       alignItems: "center",
       justifyContent: "center",
       marginVertical: rs(16),
+      flex: 1,
     },
     placeholderImage: {
       width: rs(32),
@@ -90,6 +91,13 @@ const createStyles = (theme: any) =>
       paddingHorizontal: rs(8),
       paddingVertical: rs(16),
     },
+    textSectionBottom: {
+      alignItems: "center",
+      gap: rs(32),
+      paddingHorizontal: rs(8),
+      paddingVertical: rs(16),
+      marginTop: "auto",
+    },
     textContent: {
       alignSelf: "stretch",
       gap: rs(24),
@@ -115,6 +123,7 @@ const createStyles = (theme: any) =>
     },
     fieldContainer: {
       gap: rs(16),
+      alignSelf: "stretch",
     },
     fieldLabel: {
       fontSize: rs(12),
@@ -132,6 +141,7 @@ const createStyles = (theme: any) =>
       minHeight: rs(56),
       justifyContent: "center",
       backgroundColor: theme.colors.backgroundPrimary,
+      alignSelf: "stretch",
     },
     fieldText: {
       fontSize: rs(16),
@@ -153,6 +163,7 @@ const createStyles = (theme: any) =>
       color: theme.colors.textPrimary,
       fontFamily: theme.typography.fontFamily.primary,
       backgroundColor: theme.colors.backgroundPrimary,
+      alignSelf: "stretch",
     },
     writeForMeContainer: {
       flexDirection: "row",
@@ -201,6 +212,16 @@ export default function MessagingFlowScreen() {
 
   // Find vendor data
   const vendor = mockVendors.find((v) => v.id === vendorId);
+
+  // Check if user has already messaged this vendor
+  useEffect(() => {
+    const existingChat = mockChats.find((chat) => chat.vendorId === vendorId);
+    if (existingChat) {
+      // Redirect to existing chat
+      router.replace(`/chat/${existingChat.id}`);
+      return;
+    }
+  }, [vendorId, router]);
 
   // Reload user data when screen comes into focus (e.g., returning from settings)
   useFocusEffect(
@@ -390,13 +411,7 @@ export default function MessagingFlowScreen() {
               </View>
             </View>
 
-            <View style={styles.closeIconContainer}>
-              <TouchableOpacity style={styles.closeButton}>
-                <Ionicons name="close" size={rs(10)} color="#333333" />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.textSection}>
+            <View style={styles.textSectionBottom}>
               <View style={styles.textContent}>
                 <ThemedText style={styles.title}>
                   Just a Few Quick Questions First
