@@ -1,3 +1,4 @@
+import { ShareModal } from "@/components/ShareModal";
 import { SuperlikeButton } from "@/components/SuperlikeButton";
 import { getLineHeight, rf, rh, rs } from "@/constants/Responsive";
 import { mockChats } from "@/data/mockChats";
@@ -46,6 +47,7 @@ export default function VendorDetailsScreen() {
   const [imageErrorStates, setImageErrorStates] = useState<{
     [key: string]: boolean;
   }>({});
+  const [showShareModal, setShowShareModal] = useState(false);
 
   // Load favorites and user data when component mounts
   useEffect(() => {
@@ -104,6 +106,10 @@ export default function VendorDetailsScreen() {
         params: { vendorId: vendor.id },
       });
     }
+  };
+
+  const handleShare = () => {
+    setShowShareModal(true);
   };
 
   const toggleReviewExpanded = (reviewId: string) => {
@@ -494,6 +500,7 @@ export default function VendorDetailsScreen() {
           </View>
           <TouchableOpacity
             style={[styles.navButton, !isScrolled && styles.navButtonWithBg]}
+            onPress={handleShare}
           >
             <Ionicons
               name="share-outline"
@@ -519,6 +526,18 @@ export default function VendorDetailsScreen() {
           <Text style={styles.ctaButtonPrimaryText}>Message</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Share Modal */}
+      <ShareModal
+        visible={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        vendor={{
+          id: vendor.id,
+          name: vendor.name,
+          location: vendor.location,
+          avatar: vendor.images?.[0]?.url,
+        }}
+      />
     </View>
   );
 }

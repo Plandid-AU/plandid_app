@@ -19,6 +19,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { ShareModal } from "../../components/ShareModal";
 
 const createStyles = (theme: any) =>
   StyleSheet.create({
@@ -97,6 +98,7 @@ export default function ChatScreen() {
 
   const [chat, setChat] = useState<Chat | null>(null);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
     const foundChat = mockChats.find((c) => c.id === id);
@@ -180,7 +182,7 @@ export default function ChatScreen() {
 
   const handleShare = () => {
     setShowOptionsModal(false);
-    Alert.alert("Share", "Share vendor with friends");
+    setShowShareModal(true);
   };
 
   const handleClearChat = () => {
@@ -320,6 +322,22 @@ export default function ChatScreen() {
         onShare={handleShare}
         onClearChat={handleClearChat}
         onReportVendor={handleReportVendor}
+      />
+
+      {/* Share Modal */}
+      <ShareModal
+        visible={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        vendor={
+          chat
+            ? {
+                id: chat.vendorId || chat.id,
+                name: chat.vendorName,
+                location: "Vendor Location", // Could be enhanced with actual location data
+                avatar: chat.avatar,
+              }
+            : undefined
+        }
       />
     </SafeAreaView>
   );

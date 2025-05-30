@@ -15,10 +15,10 @@ import {
   Animated,
   FlatList,
   SafeAreaView,
-  Share,
   StyleSheet,
   View,
 } from "react-native";
+import { ShareModal } from "../../components/ShareModal";
 
 const createStyles = (theme: any) =>
   StyleSheet.create({
@@ -63,6 +63,7 @@ export default function FavouritesScreen() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   // Animation values
   const cardAnimations = useRef<{ [key: string]: Animated.Value }>({}).current;
@@ -162,15 +163,7 @@ export default function FavouritesScreen() {
     if (!selectedVendor) return;
 
     handleCloseModal();
-
-    try {
-      await Share.share({
-        message: `Check out ${selectedVendor.name} - ${selectedVendor.tagline}`,
-        title: `${selectedVendor.name} on Plandid`,
-      });
-    } catch (error) {
-      console.error("Error sharing:", error);
-    }
+    setShowShareModal(true);
   };
 
   const handleMoveToSuperliked = async () => {
@@ -327,6 +320,22 @@ export default function FavouritesScreen() {
         onMoveToLiked={handleMoveToLiked}
         onRemove={handleRemove}
         onReport={handleReport}
+      />
+
+      {/* Share Modal */}
+      <ShareModal
+        visible={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        vendor={
+          selectedVendor
+            ? {
+                id: selectedVendor.id,
+                name: selectedVendor.name,
+                location: selectedVendor.location,
+                avatar: selectedVendor.images?.[0]?.url,
+              }
+            : undefined
+        }
       />
     </SafeAreaView>
   );

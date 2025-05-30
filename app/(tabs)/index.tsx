@@ -1,3 +1,4 @@
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -31,9 +32,15 @@ const createStyles = (theme: any) =>
       paddingBottom: rs(12),
       borderBottomWidth: 1,
       borderBottomColor: theme.colors.borderLight,
+      zIndex: 10,
     },
     stickyHeaderWithShadow: {
-      ...theme.shadows.sm,
+      borderBottomColor: "transparent",
+      zIndex: 10,
+    },
+    shadowLine: {
+      height: rs(4),
+      zIndex: 9,
     },
     searchBarContainer: {
       paddingHorizontal: theme.spacing["2xl"],
@@ -218,6 +225,14 @@ export default function HomeScreen() {
           />
         </View>
       </View>
+
+      {/* Bottom Shadow Line - only visible when scrolled */}
+      {hasScrolled && (
+        <LinearGradient
+          colors={["rgba(0,0,0,0.1)", "transparent"]}
+          style={styles.shadowLine}
+        />
+      )}
 
       <FlatList
         ref={flatListRef}
