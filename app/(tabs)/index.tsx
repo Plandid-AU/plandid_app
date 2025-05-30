@@ -1,6 +1,13 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Animated,
   FlatList,
@@ -68,6 +75,8 @@ const createStyles = (theme: any) =>
 export default function HomeScreen() {
   const theme = useTheme();
   const styles = createStyles(theme);
+
+  // Use a constant initial value to prevent re-renders during mount
   const [selectedCategory, setSelectedCategory] = useState<VendorCategory>(
     VendorCategory.PHOTO
   );
@@ -84,11 +93,36 @@ export default function HomeScreen() {
   // FlatList ref for scroll control
   const flatListRef = useRef<FlatList>(null);
 
-  // Load favorites and user preferences when component mounts
+  // Ref to track if component is mounted to prevent state updates after unmount
+  const isMountedRef = useRef(true);
+
+  // Load favorites and user preferences when component mounts - using startTransition to avoid insertion effect warnings
   useEffect(() => {
-    loadFavorites();
-    loadUserPreferences();
-  }, [loadFavorites, loadUserPreferences]);
+    isMountedRef.current = true;
+
+    // Defer the async operations to avoid insertion effect warnings
+    const timeoutId = setTimeout(() => {
+      if (!isMountedRef.current) return;
+
+      startTransition(() => {
+        const initializeData = async () => {
+          try {
+            await Promise.all([loadFavorites(), loadUserPreferences()]);
+          } catch (error) {
+            console.error("Error initializing data:", error);
+          }
+        };
+
+        initializeData();
+      });
+    }, 0);
+
+    // Cleanup function to mark component as unmounted
+    return () => {
+      isMountedRef.current = false;
+      clearTimeout(timeoutId);
+    };
+  }, []); // Remove dependencies to prevent re-runs during navigation
 
   // Filter vendors by selected category
   const filteredVendors = useMemo(() => {
@@ -106,6 +140,8 @@ export default function HomeScreen() {
 
   // Animate content transition when category changes
   useEffect(() => {
+    if (!isMountedRef.current) return;
+
     setIsTransitioning(true);
 
     // Scroll to top smoothly if user has scrolled
@@ -115,7 +151,9 @@ export default function HomeScreen() {
         animated: true,
       });
       // Reset scroll state
-      setHasScrolled(false);
+      if (isMountedRef.current) {
+        setHasScrolled(false);
+      }
     }
 
     // Reset and animate only the vendor cards
@@ -131,75 +169,83 @@ export default function HomeScreen() {
 
     if (cardAnimationPromises.length > 0) {
       Animated.stagger(40, cardAnimationPromises).start(() => {
-        setIsTransitioning(false);
+        if (isMountedRef.current) {
+          setIsTransitioning(false);
+        }
       });
     } else {
-      setIsTransitioning(false);
+      if (isMountedRef.current) {
+        setIsTransitioning(false);
+      }
     }
-  }, [selectedCategory]);
+  }, [selectedCategory, filteredVendors.length]); // Only depend on category and vendor count
 
-  const handleSearchPress = () => {
+  const handleSearchPress = useCallback(() => {
     // Navigate to search page
     router.push("/search");
-  };
+  }, []);
 
-  const handleVendorPress = (vendor: Vendor) => {
+  const handleVendorPress = useCallback((vendor: Vendor) => {
     // Navigate to vendor details
     router.push({
       pathname: "/vendor/[id]",
       params: { id: vendor.id },
     });
-  };
+  }, []);
 
-  const handleScroll = Animated.event(
-    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-    {
+  const handleScroll = useCallback(
+    Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
       useNativeDriver: false,
       listener: (event: any) => {
+        if (!isMountedRef.current) return;
+
         const offsetY = event.nativeEvent.contentOffset.y;
-        setHasScrolled(offsetY > 10);
+        const shouldHaveScrolled = offsetY > 10;
+
+        // Only update state if it actually changed to prevent unnecessary renders
+        if (hasScrolled !== shouldHaveScrolled) {
+          setHasScrolled(shouldHaveScrolled);
+        }
       },
-    }
+    }),
+    [hasScrolled, scrollY]
   );
 
-  const renderVendorCard = ({
-    item,
-    index,
-  }: {
-    item: Vendor;
-    index: number;
-  }) => {
-    const cardAnim = cardAnimations[item.id] || new Animated.Value(1);
+  const renderVendorCard = useCallback(
+    ({ item, index }: { item: Vendor; index: number }) => {
+      const cardAnim = cardAnimations[item.id] || new Animated.Value(1);
 
-    const cardOpacity = cardAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, 1],
-    });
+      const cardOpacity = cardAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, 1],
+      });
 
-    const cardTranslateY = cardAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [30, 0],
-    });
+      const cardTranslateY = cardAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [30, 0],
+      });
 
-    const cardScale = cardAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0.95, 1],
-    });
+      const cardScale = cardAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0.95, 1],
+      });
 
-    return (
-      <Animated.View
-        style={[
-          styles.cardContainer,
-          {
-            opacity: cardOpacity,
-            transform: [{ translateY: cardTranslateY }, { scale: cardScale }],
-          },
-        ]}
-      >
-        <VendorCard vendor={item} onPress={() => handleVendorPress(item)} />
-      </Animated.View>
-    );
-  };
+      return (
+        <Animated.View
+          style={[
+            styles.cardContainer,
+            {
+              opacity: cardOpacity,
+              transform: [{ translateY: cardTranslateY }, { scale: cardScale }],
+            },
+          ]}
+        >
+          <VendorCard vendor={item} onPress={() => handleVendorPress(item)} />
+        </Animated.View>
+      );
+    },
+    [cardAnimations, styles.cardContainer, handleVendorPress]
+  );
 
   return (
     <SafeAreaView style={styles.container}>

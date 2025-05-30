@@ -1,3 +1,6 @@
+// Import warning suppression first to catch warnings early
+import "@/utils/suppressWarnings";
+
 import {
   DarkTheme,
   DefaultTheme,
