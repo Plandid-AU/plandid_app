@@ -117,10 +117,61 @@ const runMigrations = () => {
       setSchemaVersion(3);
     }
 
+    // Migration 4: Add notification settings to user_preferences table
+    if (currentVersion < 4) {
+      console.log("Running migration 4: Adding notification settings...");
+
+      // Check if user_preferences table exists and has notification columns
+      const tableInfo = db.getAllSync(`PRAGMA table_info(user_preferences)`);
+      const hasMessagesColumn = tableInfo.some(
+        (column: any) => column.name === "notificationsMessages"
+      );
+      const hasRecommendationsColumn = tableInfo.some(
+        (column: any) => column.name === "notificationsRecommendations"
+      );
+      const hasRemindersColumn = tableInfo.some(
+        (column: any) => column.name === "notificationsReminders"
+      );
+      const hasEmailColumn = tableInfo.some(
+        (column: any) => column.name === "notificationsEmail"
+      );
+
+      if (!hasMessagesColumn) {
+        db.execSync(
+          `ALTER TABLE user_preferences ADD COLUMN notificationsMessages INTEGER DEFAULT 0`
+        );
+        console.log("Migration 4: notificationsMessages column added");
+      }
+
+      if (!hasRecommendationsColumn) {
+        db.execSync(
+          `ALTER TABLE user_preferences ADD COLUMN notificationsRecommendations INTEGER DEFAULT 0`
+        );
+        console.log("Migration 4: notificationsRecommendations column added");
+      }
+
+      if (!hasRemindersColumn) {
+        db.execSync(
+          `ALTER TABLE user_preferences ADD COLUMN notificationsReminders INTEGER DEFAULT 0`
+        );
+        console.log("Migration 4: notificationsReminders column added");
+      }
+
+      if (!hasEmailColumn) {
+        db.execSync(
+          `ALTER TABLE user_preferences ADD COLUMN notificationsEmail INTEGER DEFAULT 0`
+        );
+        console.log("Migration 4: notificationsEmail column added");
+      }
+
+      console.log("Migration 4 completed: notification settings added");
+      setSchemaVersion(4);
+    }
+
     // Future migrations can be added here
-    // if (currentVersion < 4) {
-    //   // Migration 4 code here
-    //   setSchemaVersion(4);
+    // if (currentVersion < 5) {
+    //   // Migration 5 code here
+    //   setSchemaVersion(5);
     // }
   } catch (error) {
     console.error("Error running migrations:", error);
@@ -588,6 +639,10 @@ export const getUserPreferences = async (
   hasSeenUndoSuperlikeTooltip: boolean;
   hasCompletedFirstSuperlike: boolean;
   shareDataForAnalytics: boolean;
+  notificationsMessages: boolean;
+  notificationsRecommendations: boolean;
+  notificationsReminders: boolean;
+  notificationsEmail: boolean;
 }> => {
   return new Promise((resolve, reject) => {
     try {
@@ -602,6 +657,11 @@ export const getUserPreferences = async (
           hasSeenUndoSuperlikeTooltip: result.hasSeenUndoSuperlikeTooltip === 1,
           hasCompletedFirstSuperlike: result.hasCompletedFirstSuperlike === 1,
           shareDataForAnalytics: result.shareDataForAnalytics === 1,
+          notificationsMessages: result.notificationsMessages === 1,
+          notificationsRecommendations:
+            result.notificationsRecommendations === 1,
+          notificationsReminders: result.notificationsReminders === 1,
+          notificationsEmail: result.notificationsEmail === 1,
         });
       } else {
         // Initialize preferences for new user
@@ -613,6 +673,10 @@ export const getUserPreferences = async (
           hasSeenUndoSuperlikeTooltip: false,
           hasCompletedFirstSuperlike: false,
           shareDataForAnalytics: false,
+          notificationsMessages: false,
+          notificationsRecommendations: false,
+          notificationsReminders: false,
+          notificationsEmail: false,
         });
       }
     } catch (error) {
@@ -628,7 +692,11 @@ export const updateUserPreference = async (
     | "hasSeenSuperlikeTooltip"
     | "hasSeenUndoSuperlikeTooltip"
     | "hasCompletedFirstSuperlike"
-    | "shareDataForAnalytics",
+    | "shareDataForAnalytics"
+    | "notificationsMessages"
+    | "notificationsRecommendations"
+    | "notificationsReminders"
+    | "notificationsEmail",
   value: boolean
 ): Promise<void> => {
   return new Promise((resolve, reject) => {
