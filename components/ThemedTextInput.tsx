@@ -1,6 +1,6 @@
 import { useTheme } from "@/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
-import React, { forwardRef, useState } from "react";
+import React, { forwardRef, useMemo, useState } from "react";
 import {
   StyleSheet,
   TextInput,
@@ -113,7 +113,7 @@ export const ThemedTextInput = forwardRef<TextInput, ThemedTextInputProps>(
     ref
   ) => {
     const theme = useTheme();
-    const styles = createStyles(theme);
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const [isFocused, setIsFocused] = useState(false);
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 

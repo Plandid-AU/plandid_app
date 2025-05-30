@@ -1,7 +1,7 @@
 import { SuperlikeButton } from "@/components/SuperlikeButton";
 import { ThemedText } from "@/components/ThemedText";
 import { rf, rh, rs } from "@/constants/Responsive";
-import { useTheme } from "@/hooks/useTheme";
+import { theme } from "@/constants/Theme";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useCallback, useRef, useState } from "react";
@@ -29,139 +29,137 @@ interface VendorCardProps {
   onPress: () => void;
 }
 
-const createStyles = (theme: any) =>
-  StyleSheet.create({
-    card: {
-      backgroundColor: theme.colors.backgroundPrimary,
-      borderRadius: theme.borderRadius.xl,
-      overflow: "hidden",
-      marginBottom: theme.spacing["2xl"],
-      borderWidth: 1,
-      borderColor: theme.colors.borderLight,
-      ...theme.shadows.base,
-    },
-    imageContainer: {
-      height: IMAGE_HEIGHT,
-      position: "relative",
-    },
-    imageItem: {
-      width: CARD_WIDTH,
-    },
-    imageWrapper: {
-      position: "relative",
-    },
-    image: {
-      width: CARD_WIDTH,
-      height: IMAGE_HEIGHT,
-    },
-    errorContainer: {
-      backgroundColor: theme.colors.gray50,
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    errorText: {
-      color: theme.colors.gray800,
-      fontSize: rf(12),
-      marginTop: rs(8),
-      textAlign: "center",
-    },
-    loadingOverlay: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: theme.colors.backgroundOverlay,
-    },
-    gradient: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      height: rh(80),
-    },
-    heartButton: {
-      position: "absolute",
-      top: rs(12),
-      right: rs(16),
-      zIndex: 1,
-    },
-    heartIconContainer: {
-      width: rs(24),
-      height: rs(22),
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    heartIcon: {
-      ...theme.shadows.text,
-    },
-    pagination: {
-      position: "absolute",
-      bottom: rs(18),
-      alignSelf: "center",
-      flexDirection: "row",
-      alignItems: "center",
-      gap: rs(6),
-    },
-    paginationDot: {
-      borderRadius: rs(3),
-    },
-    paginationDotActive: {
-      width: rs(6),
-      height: rs(6),
-      backgroundColor: theme.colors.white,
-    },
-    paginationDotInactive: {
-      width: rs(6),
-      height: rs(6),
-      backgroundColor: theme.colors.gray300,
-    },
-    infoContainer: {
-      padding: rs(12),
-      paddingHorizontal: rs(18),
-    },
-    infoContent: {
-      gap: rs(8),
-    },
-    headerRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "flex-start",
-      gap: rs(19),
-    },
-    vendorInfo: {
-      flex: 1,
-      gap: rs(6),
-    },
-    vendorHeader: {
-      gap: rs(2),
-    },
-    ratingContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: rs(4),
-      height: rh(19),
-    },
-    divider: {
-      ...theme.components.divider,
-      marginVertical: 0,
-    },
-    featuresRow: {
-      flexDirection: "row",
-      gap: rs(12),
-    },
-    feature: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: rs(4),
-    },
-  });
+// Create styles statically to avoid useInsertionEffect issues
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: theme.colors.backgroundPrimary,
+    borderRadius: theme.borderRadius.xl,
+    overflow: "hidden",
+    marginBottom: theme.spacing["2xl"],
+    borderWidth: 1,
+    borderColor: theme.colors.borderLight,
+    ...theme.shadows.base,
+  },
+  imageContainer: {
+    height: IMAGE_HEIGHT,
+    position: "relative",
+  },
+  imageItem: {
+    width: CARD_WIDTH,
+  },
+  imageWrapper: {
+    position: "relative",
+  },
+  image: {
+    width: CARD_WIDTH,
+    height: IMAGE_HEIGHT,
+  },
+  errorContainer: {
+    backgroundColor: theme.colors.gray50,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    color: theme.colors.gray800,
+    fontSize: rf(12),
+    marginTop: rs(8),
+    textAlign: "center",
+  },
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: theme.colors.backgroundOverlay,
+  },
+  gradient: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: rh(80),
+  },
+  heartButton: {
+    position: "absolute",
+    top: rs(12),
+    right: rs(16),
+    zIndex: 1,
+  },
+  heartIconContainer: {
+    width: rs(24),
+    height: rs(22),
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  heartIcon: {
+    ...theme.shadows.text,
+  },
+  pagination: {
+    position: "absolute",
+    bottom: rs(18),
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: rs(6),
+  },
+  paginationDot: {
+    borderRadius: rs(3),
+  },
+  paginationDotActive: {
+    width: rs(6),
+    height: rs(6),
+    backgroundColor: theme.colors.white,
+  },
+  paginationDotInactive: {
+    width: rs(6),
+    height: rs(6),
+    backgroundColor: theme.colors.gray300,
+  },
+  infoContainer: {
+    padding: rs(12),
+    paddingHorizontal: rs(18),
+  },
+  infoContent: {
+    gap: rs(8),
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    gap: rs(19),
+  },
+  vendorInfo: {
+    flex: 1,
+    gap: rs(6),
+  },
+  vendorHeader: {
+    gap: rs(2),
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: rs(4),
+    height: rh(19),
+  },
+  divider: {
+    ...theme.components.divider,
+    marginVertical: 0,
+  },
+  featuresRow: {
+    flexDirection: "row",
+    gap: rs(12),
+  },
+  feature: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: rs(4),
+  },
+});
 
 export const VendorCard: React.FC<VendorCardProps> = ({ vendor, onPress }) => {
-  const theme = useTheme();
-  const styles = createStyles(theme);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [imageLoadingStates, setImageLoadingStates] = useState<{
     [key: string]: boolean;

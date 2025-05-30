@@ -3,7 +3,7 @@ import { rs } from "@/constants/Responsive";
 import { useTheme } from "@/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React from "react";
+import React, { useMemo } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { FavouritesTab } from "./FavouritesTabs";
 
@@ -51,7 +51,7 @@ export const FavouritesEmptyState: React.FC<FavouritesEmptyStateProps> = ({
   tab,
 }) => {
   const theme = useTheme();
-  const styles = createStyles(theme);
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   const getEmptyStateContent = () => {
     switch (tab) {

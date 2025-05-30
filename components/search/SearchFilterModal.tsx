@@ -104,7 +104,7 @@ export const SearchFilterModal: React.FC<SearchFilterModalProps> = ({
   const renderLocationModal = () => (
     <>
       <View style={styles.header}>
-        <Text style={styles.title}>Where's Your Wedding?</Text>
+        <Text style={styles.title}>Where&apos;s Your Wedding?</Text>
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
           <Ionicons name="close" size={rf(18)} color="#7B1513" />
         </TouchableOpacity>
@@ -150,7 +150,7 @@ export const SearchFilterModal: React.FC<SearchFilterModalProps> = ({
   const renderDateModal = () => (
     <>
       <View style={styles.header}>
-        <Text style={styles.title}>When's Your Wedding?</Text>
+        <Text style={styles.title}>When&apos;s Your Wedding?</Text>
         <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
           <Ionicons name="close" size={rf(18)} color="#7B1513" />
         </TouchableOpacity>

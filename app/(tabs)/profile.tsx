@@ -2,7 +2,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { rs } from "@/constants/Responsive";
 import { useTheme } from "@/hooks/useTheme";
 import { router } from "expo-router";
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Image,
   Pressable,
@@ -158,7 +158,7 @@ const CheckIcon = ({ style }: { style?: any }) => (
 
 export default function ProfileScreen() {
   const theme = useTheme();
-  const styles = createStyles(theme);
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   const handleSettingPress = (route: string) => {
     router.push(route as any);

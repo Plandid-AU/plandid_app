@@ -46,7 +46,7 @@ const createStyles = (theme: any) =>
 
 export default function FavouritesScreen() {
   const theme = useTheme();
-  const styles = createStyles(theme);
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const {
     favoriteVendors,
     superlikedVendors,
@@ -72,8 +72,9 @@ export default function FavouritesScreen() {
   const flatListRef = useRef<FlatList>(null);
 
   useEffect(() => {
-    loadFavorites();
-    loadUserPreferences();
+    // Temporarily disable to test insertion effect fix
+    // loadFavorites();
+    // loadUserPreferences();
   }, [loadFavorites, loadUserPreferences]);
 
   // Get vendors for current tab

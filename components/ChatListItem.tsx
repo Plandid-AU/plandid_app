@@ -1,6 +1,6 @@
 import { rf, rs } from "@/constants/Responsive";
 import { useTheme } from "@/hooks/useTheme";
-import React from "react";
+import React, { useMemo } from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { ThemedText } from "./ThemedText";
 
@@ -68,10 +68,15 @@ const createStyles = (theme: any) =>
     },
   });
 
-export const ChatListItem: React.FC<ChatListItemProps> = (props) => {
-  const { id, name, lastMessage, unreadCount, onPress } = props;
+export const ChatListItem: React.FC<ChatListItemProps> = ({
+  id,
+  name,
+  lastMessage,
+  unreadCount,
+  onPress,
+}) => {
   const theme = useTheme();
-  const styles = createStyles(theme);
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   const getInitials = (name: string) => {
     return name
@@ -82,10 +87,14 @@ export const ChatListItem: React.FC<ChatListItemProps> = (props) => {
       .slice(0, 2);
   };
 
+  const handlePress = () => {
+    onPress(id);
+  };
+
   return (
     <TouchableOpacity
       style={styles.container}
-      onPress={() => onPress(id)}
+      onPress={handlePress}
       activeOpacity={0.7}
     >
       <View style={styles.avatar}>

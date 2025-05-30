@@ -6,7 +6,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { Chat } from "@/types/chat";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   FlatList,
   SafeAreaView,
@@ -85,7 +85,7 @@ const createStyles = (theme: any) =>
 
 export default function MessagesScreen() {
   const theme = useTheme();
-  const styles = createStyles(theme);
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [chats] = useState<Chat[]>(mockChats);

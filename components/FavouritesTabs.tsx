@@ -1,7 +1,7 @@
 import { rh, rs } from "@/constants/Responsive";
 import { useTheme } from "@/hooks/useTheme";
 import * as Haptics from "expo-haptics";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { Animated, StyleSheet, TouchableOpacity, View } from "react-native";
 
 export enum FavouritesTab {
@@ -68,7 +68,7 @@ const TabItem: React.FC<TabItemProps> = ({
 }) => {
   const textColorAnim = useRef(new Animated.Value(isSelected ? 1 : 0)).current;
   const scaleAnim = useRef(new Animated.Value(isSelected ? 1 : 0.95)).current;
-  const styles = createStyles(theme);
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   useEffect(() => {
     Animated.parallel([
@@ -134,7 +134,7 @@ export const FavouritesTabs: React.FC<FavouritesTabsProps> = ({
   onTabChange,
 }) => {
   const theme = useTheme();
-  const styles = createStyles(theme);
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const indicatorAnim = useRef(new Animated.Value(0)).current;
 
   const tabs = [

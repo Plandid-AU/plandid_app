@@ -2,7 +2,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { rs } from "@/constants/Responsive";
 import { useTheme } from "@/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import {
   Animated,
   Dimensions,
@@ -66,7 +66,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   arrowDirection = "up",
 }) => {
   const theme = useTheme();
-  const styles = createStyles(theme);
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 

@@ -11,6 +11,7 @@ import "react-native-reanimated";
 
 import { mockVendors } from "@/data/mockData";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useDataInitialization } from "@/hooks/useDataInitialization";
 import { initDatabase, seedDatabase } from "@/utils/database";
 
 export default function RootLayout() {
@@ -18,6 +19,9 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
+
+  // Initialize global data to prevent insertion effect conflicts during tab switching
+  useDataInitialization();
 
   // Initialize database on app start
   useEffect(() => {

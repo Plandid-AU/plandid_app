@@ -245,7 +245,7 @@ export const LocationSelectorModal: React.FC<LocationSelectorModalProps> = ({
       >
         {/* Header */}
         <View style={styles.header}>
-          <ThemedText type="h3">Where's Your Wedding?</ThemedText>
+          <ThemedText type="h3">Where&apos;s Your Wedding?</ThemedText>
           <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
             <Ionicons
               name="close"

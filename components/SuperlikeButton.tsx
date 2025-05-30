@@ -4,7 +4,13 @@ import { useTheme } from "@/hooks/useTheme";
 import { useFavoritesStore } from "@/stores/favoritesStore";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Animated, StyleSheet, TouchableOpacity } from "react-native";
 
 // const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -49,7 +55,7 @@ export const SuperlikeButton: React.FC<SuperlikeButtonProps> = ({
   showTooltips = true,
 }) => {
   const theme = useTheme();
-  const styles = createStyles(theme);
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const defaultIconColor = iconColor || theme.colors.white;
   const {
     isFavorited,
