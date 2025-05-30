@@ -96,10 +96,31 @@ const runMigrations = () => {
       setSchemaVersion(2);
     }
 
+    // Migration 3: Add privacy settings to user_preferences table
+    if (currentVersion < 3) {
+      console.log("Running migration 3: Adding privacy settings...");
+
+      // Check if user_preferences table exists and has privacy columns
+      const tableInfo = db.getAllSync(`PRAGMA table_info(user_preferences)`);
+      const hasShareDataColumn = tableInfo.some(
+        (column: any) => column.name === "shareDataForAnalytics"
+      );
+
+      if (!hasShareDataColumn) {
+        db.execSync(
+          `ALTER TABLE user_preferences ADD COLUMN shareDataForAnalytics INTEGER DEFAULT 0`
+        );
+        console.log("Migration 3: shareDataForAnalytics column added");
+      }
+
+      console.log("Migration 3 completed: privacy settings added");
+      setSchemaVersion(3);
+    }
+
     // Future migrations can be added here
-    // if (currentVersion < 3) {
-    //   // Migration 3 code here
-    //   setSchemaVersion(3);
+    // if (currentVersion < 4) {
+    //   // Migration 4 code here
+    //   setSchemaVersion(4);
     // }
   } catch (error) {
     console.error("Error running migrations:", error);
@@ -566,6 +587,7 @@ export const getUserPreferences = async (
   hasSeenSuperlikeTooltip: boolean;
   hasSeenUndoSuperlikeTooltip: boolean;
   hasCompletedFirstSuperlike: boolean;
+  shareDataForAnalytics: boolean;
 }> => {
   return new Promise((resolve, reject) => {
     try {
@@ -579,6 +601,7 @@ export const getUserPreferences = async (
           hasSeenSuperlikeTooltip: result.hasSeenSuperlikeTooltip === 1,
           hasSeenUndoSuperlikeTooltip: result.hasSeenUndoSuperlikeTooltip === 1,
           hasCompletedFirstSuperlike: result.hasCompletedFirstSuperlike === 1,
+          shareDataForAnalytics: result.shareDataForAnalytics === 1,
         });
       } else {
         // Initialize preferences for new user
@@ -589,6 +612,7 @@ export const getUserPreferences = async (
           hasSeenSuperlikeTooltip: false,
           hasSeenUndoSuperlikeTooltip: false,
           hasCompletedFirstSuperlike: false,
+          shareDataForAnalytics: false,
         });
       }
     } catch (error) {
@@ -603,7 +627,8 @@ export const updateUserPreference = async (
   preference:
     | "hasSeenSuperlikeTooltip"
     | "hasSeenUndoSuperlikeTooltip"
-    | "hasCompletedFirstSuperlike",
+    | "hasCompletedFirstSuperlike"
+    | "shareDataForAnalytics",
   value: boolean
 ): Promise<void> => {
   return new Promise((resolve, reject) => {

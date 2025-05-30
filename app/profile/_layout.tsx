@@ -14,6 +14,8 @@ export default function ProfileLayout() {
       <Stack.Screen name="reviews" />
       <Stack.Screen name="notifications" />
       <Stack.Screen name="privacy-security" />
+      <Stack.Screen name="privacy-policy" />
+      <Stack.Screen name="terms-conditions" />
     </Stack>
   );
 }

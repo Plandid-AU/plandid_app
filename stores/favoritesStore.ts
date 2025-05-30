@@ -21,6 +21,7 @@ interface FavoritesState {
   hasSeenSuperlikeTooltip: boolean;
   hasSeenUndoSuperlikeTooltip: boolean;
   hasCompletedFirstSuperlike: boolean;
+  shareDataForAnalytics: boolean;
 
   // Actions
   loadFavorites: (userId?: string) => Promise<void>;
@@ -52,6 +53,7 @@ export const useFavoritesStore = create<FavoritesState>()(
       hasSeenSuperlikeTooltip: false,
       hasSeenUndoSuperlikeTooltip: false,
       hasCompletedFirstSuperlike: false,
+      shareDataForAnalytics: false,
 
       // Actions
       loadFavorites: async (userId = DEFAULT_USER_ID) => {
@@ -83,6 +85,7 @@ export const useFavoritesStore = create<FavoritesState>()(
             hasSeenUndoSuperlikeTooltip:
               preferences.hasSeenUndoSuperlikeTooltip,
             hasCompletedFirstSuperlike: preferences.hasCompletedFirstSuperlike,
+            shareDataForAnalytics: preferences.shareDataForAnalytics,
           });
         } catch (error) {
           console.error("Error loading user preferences:", error);
@@ -209,6 +212,7 @@ export const useFavoritesStore = create<FavoritesState>()(
         hasSeenSuperlikeTooltip: state.hasSeenSuperlikeTooltip,
         hasSeenUndoSuperlikeTooltip: state.hasSeenUndoSuperlikeTooltip,
         hasCompletedFirstSuperlike: state.hasCompletedFirstSuperlike,
+        shareDataForAnalytics: state.shareDataForAnalytics,
       }),
     }
   )
