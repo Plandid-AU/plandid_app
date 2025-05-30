@@ -2,7 +2,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { rf, rs } from "@/constants/Responsive";
 import { useTheme } from "@/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   Animated,
   Dimensions,
@@ -104,7 +104,7 @@ export const VendorOptionsModal: React.FC<VendorOptionsModalProps> = ({
   onReport,
 }) => {
   const theme = useTheme();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = createStyles(theme);
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
 

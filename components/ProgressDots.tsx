@@ -1,6 +1,6 @@
 import { rs } from "@/constants/Responsive";
 import { useTheme } from "@/hooks/useTheme";
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, View } from "react-native";
 
 interface ProgressDotsProps {
@@ -27,7 +27,7 @@ export const ProgressDots: React.FC<ProgressDotsProps> = ({
   totalSteps,
 }) => {
   const theme = useTheme();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = createStyles(theme);
 
   // Create animation refs for each dot
   const dotAnimations = useRef<Animated.Value[]>([]);

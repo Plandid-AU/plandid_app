@@ -197,7 +197,7 @@ export default function YourPartnerScreen() {
             <View style={styles.titleSection}>
               <ThemedText type="h3">Your Partner</ThemedText>
               <ThemedText type="caption" style={styles.subtitle}>
-                Check or modify your partner&apos;s information
+                Check or modify your partner's information
               </ThemedText>
             </View>
 

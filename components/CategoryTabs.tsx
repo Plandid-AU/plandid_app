@@ -1,5 +1,5 @@
 import { rh, rs } from "@/constants/Responsive";
-import { theme } from "@/constants/Theme";
+import { useTheme } from "@/hooks/useTheme";
 import * as Haptics from "expo-haptics";
 import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, TouchableOpacity, View } from "react-native";
@@ -14,49 +14,56 @@ interface TabItemProps {
   title: string;
   isSelected: boolean;
   onPress: () => void;
+  theme: any;
 }
 
-// Create styles statically to avoid useInsertionEffect issues
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: rs(4),
-    borderRadius: theme.borderRadius["2xl"],
-    position: "relative",
-  },
-  tabItem: {
-    width: rs(88),
-    height: rh(44),
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: theme.borderRadius.xl,
-  },
-  tabTitleContainer: {
-    height: rh(36),
-    paddingHorizontal: theme.spacing["2xl"],
-    paddingVertical: theme.spacing.base,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  tabTitle: {
-    fontFamily: theme.typography.fontFamily.primary,
-    fontSize: theme.typography.fontSize.base,
-    lineHeight: theme.typography.lineHeight.base,
-    textAlign: "center",
-  },
-  indicator: {
-    width: rs(24),
-    height: rs(4),
-    backgroundColor: theme.colors.primary,
-    borderRadius: rs(2),
-  },
-});
+const createStyles = (theme: any) =>
+  StyleSheet.create({
+    container: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      paddingVertical: rs(4),
+      borderRadius: theme.borderRadius["2xl"],
+      position: "relative",
+    },
+    tabItem: {
+      width: rs(88),
+      height: rh(44),
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: theme.borderRadius.xl,
+    },
+    tabTitleContainer: {
+      height: rh(36),
+      paddingHorizontal: theme.spacing["2xl"],
+      paddingVertical: theme.spacing.base,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    tabTitle: {
+      fontFamily: theme.typography.fontFamily.primary,
+      fontSize: theme.typography.fontSize.base,
+      lineHeight: theme.typography.lineHeight.base,
+      textAlign: "center",
+    },
+    indicator: {
+      width: rs(24),
+      height: rs(4),
+      backgroundColor: theme.colors.primary,
+      borderRadius: rs(2),
+    },
+  });
 
-const TabItem: React.FC<TabItemProps> = ({ title, isSelected, onPress }) => {
+const TabItem: React.FC<TabItemProps> = ({
+  title,
+  isSelected,
+  onPress,
+  theme,
+}) => {
   const textColorAnim = useRef(new Animated.Value(isSelected ? 1 : 0)).current;
   const scaleAnim = useRef(new Animated.Value(isSelected ? 1 : 0.95)).current;
+  const styles = createStyles(theme);
 
   useEffect(() => {
     Animated.parallel([
@@ -121,6 +128,8 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
   selectedCategory,
   onCategoryChange,
 }) => {
+  const theme = useTheme();
+  const styles = createStyles(theme);
   const indicatorAnim = useRef(new Animated.Value(0)).current;
 
   const categories = [
@@ -159,16 +168,19 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
         title="Photo"
         isSelected={selectedCategory === VendorCategory.PHOTO}
         onPress={() => onCategoryChange(VendorCategory.PHOTO)}
+        theme={theme}
       />
       <TabItem
         title="Video"
         isSelected={selectedCategory === VendorCategory.VIDEO}
         onPress={() => onCategoryChange(VendorCategory.VIDEO)}
+        theme={theme}
       />
       <TabItem
         title="Content"
         isSelected={selectedCategory === VendorCategory.CONTENT}
         onPress={() => onCategoryChange(VendorCategory.CONTENT)}
+        theme={theme}
       />
 
       {/* Animated Indicator */}

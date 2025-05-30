@@ -4,7 +4,7 @@ import { rs } from "@/constants/Responsive";
 import { useTheme } from "@/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useMemo } from "react";
+import React from "react";
 import {
   Modal,
   StyleSheet,
@@ -77,7 +77,7 @@ export const SettingsChangeModal: React.FC<SettingsChangeModalProps> = ({
   type,
 }) => {
   const theme = useTheme();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = createStyles(theme);
 
   const getTitle = () => {
     return type === "name" ? "Who's Your Partner?" : "When's Your Wedding?";

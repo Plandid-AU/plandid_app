@@ -1,7 +1,7 @@
 import { ThemedText } from "@/components/ThemedText";
 import { rs } from "@/constants/Responsive";
 import { useTheme } from "@/hooks/useTheme";
-import React, { useMemo } from "react";
+import React from "react";
 import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Vendor } from "../types";
 
@@ -66,7 +66,7 @@ export const FavouritesVendorCard: React.FC<FavouritesVendorCardProps> = ({
   onMenuPress,
 }) => {
   const theme = useTheme();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = createStyles(theme);
 
   return (
     <TouchableOpacity

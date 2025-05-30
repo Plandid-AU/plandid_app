@@ -2,7 +2,7 @@ import { rf, rs } from "@/constants/Responsive";
 import { useTheme } from "@/hooks/useTheme";
 import { Attachment } from "@/types/chat";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useMemo } from "react";
+import React from "react";
 import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 import { ThemedText } from "./ThemedText";
 
@@ -117,7 +117,7 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({
   attachments = [],
 }) => {
   const theme = useTheme();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = createStyles(theme);
 
   const isSent = type === "sent";
   const hasAttachments = attachments && attachments.length > 0;
