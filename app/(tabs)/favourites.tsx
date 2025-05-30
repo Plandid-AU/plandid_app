@@ -50,6 +50,7 @@ export default function FavouritesScreen() {
   const {
     favoriteVendors,
     superlikedVendors,
+    contactedVendors,
     loadFavorites,
     loadUserPreferences,
     toggleFavoriteVendor,
@@ -86,12 +87,13 @@ export default function FavouritesScreen() {
           superlikedVendors.includes(vendor.id)
         );
       case FavouritesTab.CONTACTED:
-        // For now, return empty array since contacted feature is not implemented
-        return [];
+        return mockVendors.filter((vendor) =>
+          contactedVendors.includes(vendor.id)
+        );
       default:
         return [];
     }
-  }, [selectedTab, favoriteVendors, superlikedVendors]);
+  }, [selectedTab, favoriteVendors, superlikedVendors, contactedVendors]);
 
   // Initialize card animations for new vendors
   useEffect(() => {

@@ -6,7 +6,7 @@ import { useUserStore } from "@/stores/userStore";
 import { Vendor } from "@/types";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -29,6 +29,7 @@ const IMAGE_HEIGHT = rh(342);
 
 export default function VendorDetailsScreen() {
   const { id } = useLocalSearchParams();
+  const router = useRouter();
   const vendor = mockVendors.find((v) => v.id === id) as Vendor;
   const { loadFavorites } = useFavoritesStore();
   const { user, loadUser } = useUserStore();
@@ -86,7 +87,10 @@ export default function VendorDetailsScreen() {
   };
 
   const handleMessage = () => {
-    Alert.alert("Message", "Messaging feature coming soon!");
+    router.push({
+      pathname: "/messaging/[vendorId]",
+      params: { vendorId: vendor.id },
+    });
   };
 
   const toggleReviewExpanded = (reviewId: string) => {

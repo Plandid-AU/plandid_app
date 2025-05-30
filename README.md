@@ -40,7 +40,19 @@ A React Native app built with Expo for planning and vendor management.
    npm install
    ```
 
-2. Start the app
+2. Configure environment variables (optional)
+
+   For AI-powered message generation, create a `.env` file in the project root:
+
+   ```bash
+   # Google Gemini AI API Key (optional)
+   # Get your API key from: https://makersuite.google.com/app/apikey
+   EXPO_PUBLIC_GEMINI_API_KEY=your_gemini_api_key_here
+   ```
+
+   **Note:** The messaging feature will work without an API key, using fallback messages instead.
+
+3. Start the app
 
    ```bash
    npx expo start

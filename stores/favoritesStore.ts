@@ -14,6 +14,7 @@ interface FavoritesState {
   // State
   favoriteVendors: string[];
   superlikedVendors: string[];
+  contactedVendors: string[];
   isLoading: boolean;
   error: string | null;
 
@@ -31,8 +32,10 @@ interface FavoritesState {
     vendorId: string,
     userId?: string
   ) => Promise<{ isSuperliked: boolean; isFavorited: boolean }>;
+  addContactedVendor: (vendorId: string) => void;
   isFavorited: (vendorId: string) => boolean;
   isSuperliked: (vendorId: string) => boolean;
+  isContacted: (vendorId: string) => boolean;
   markTooltipSeen: (
     tooltipType: "superlike" | "undoSuperlike",
     userId?: string
@@ -48,6 +51,7 @@ export const useFavoritesStore = create<FavoritesState>()(
       // Initial state
       favoriteVendors: [],
       superlikedVendors: [],
+      contactedVendors: [],
       isLoading: false,
       error: null,
       hasSeenSuperlikeTooltip: false,
@@ -172,12 +176,24 @@ export const useFavoritesStore = create<FavoritesState>()(
         }
       },
 
+      addContactedVendor: (vendorId: string) => {
+        set((state) => ({
+          contactedVendors: state.contactedVendors.includes(vendorId)
+            ? state.contactedVendors
+            : [...state.contactedVendors, vendorId],
+        }));
+      },
+
       isFavorited: (vendorId: string) => {
         return get().favoriteVendors.includes(vendorId);
       },
 
       isSuperliked: (vendorId: string) => {
         return get().superlikedVendors.includes(vendorId);
+      },
+
+      isContacted: (vendorId: string) => {
+        return get().contactedVendors.includes(vendorId);
       },
 
       markTooltipSeen: async (
@@ -205,10 +221,11 @@ export const useFavoritesStore = create<FavoritesState>()(
     {
       name: "favorites-storage",
       storage: createJSONStorage(() => AsyncStorage),
-      // Persist favorites, superlikes, and user preferences
+      // Persist favorites, superlikes, contacted vendors, and user preferences
       partialize: (state) => ({
         favoriteVendors: state.favoriteVendors,
         superlikedVendors: state.superlikedVendors,
+        contactedVendors: state.contactedVendors,
         hasSeenSuperlikeTooltip: state.hasSeenSuperlikeTooltip,
         hasSeenUndoSuperlikeTooltip: state.hasSeenUndoSuperlikeTooltip,
         hasCompletedFirstSuperlike: state.hasCompletedFirstSuperlike,
