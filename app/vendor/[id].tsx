@@ -112,6 +112,11 @@ export default function VendorDetailsScreen() {
     setShowShareModal(true);
   };
 
+  const handleReport = () => {
+    // TODO: Implement report vendor functionality
+    Alert.alert("Report Vendor", "Report functionality coming soon!");
+  };
+
   const toggleReviewExpanded = (reviewId: string) => {
     setExpandedReviews((prev) =>
       prev.includes(reviewId)
@@ -471,6 +476,17 @@ export default function VendorDetailsScreen() {
                 </View>
               ))}
             </ScrollView>
+          </View>
+
+          {/* Report Section */}
+          <View style={styles.reportSection}>
+            <TouchableOpacity
+              style={styles.reportButton}
+              onPress={handleReport}
+            >
+              <Ionicons name="flag-outline" size={rf(14)} color="#A0A0A0" />
+              <Text style={styles.reportText}>Report this vendor</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -982,5 +998,26 @@ const styles = StyleSheet.create({
     height: StatusBar.currentHeight || (Platform.OS === "ios" ? rh(44) : 0),
     backgroundColor: "#FFFFFF",
     zIndex: 999,
+  },
+  reportButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: rs(6),
+    paddingVertical: rs(12),
+    paddingHorizontal: rs(16),
+    alignSelf: "center",
+  },
+  reportText: {
+    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
+    fontWeight: "500",
+    fontSize: rf(12),
+    lineHeight: getLineHeight(rf(12), 1.2),
+    color: "#A0A0A0",
+  },
+  reportSection: {
+    paddingHorizontal: rs(24),
+    paddingVertical: rs(20),
+    alignItems: "center",
   },
 });
