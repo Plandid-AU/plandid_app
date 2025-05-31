@@ -87,7 +87,14 @@ export default function VendorDetailsScreen() {
   };
 
   const handleInstantQuote = () => {
-    Alert.alert("Instant Quote", "Instant quote feature coming soon!");
+    if (vendor.hasInstantQuote) {
+      router.push(`/quotes/instant-quote?vendorId=${vendor.id}` as any);
+    } else {
+      Alert.alert(
+        "Instant Quote",
+        "This vendor doesn&apos;t offer instant quotes. Please contact them directly for a quote."
+      );
+    }
   };
 
   const handleMessage = () => {

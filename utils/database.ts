@@ -168,10 +168,40 @@ const runMigrations = () => {
       setSchemaVersion(4);
     }
 
+    // Migration 5: Add quotes table
+    if (currentVersion < 5) {
+      console.log("Running migration 5: Adding quotes table...");
+
+      db.execSync(
+        `CREATE TABLE IF NOT EXISTS quotes (
+          id TEXT PRIMARY KEY,
+          userId TEXT NOT NULL,
+          vendorId TEXT NOT NULL,
+          vendorName TEXT NOT NULL,
+          vendorAvatar TEXT,
+          selectedPackage TEXT NOT NULL,
+          packageDetails TEXT NOT NULL,
+          selectedAddons TEXT,
+          packageCost REAL NOT NULL,
+          addonsCost REAL DEFAULT 0,
+          gst REAL NOT NULL,
+          totalCost REAL NOT NULL,
+          eventDate TEXT,
+          createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (userId) REFERENCES users (id),
+          FOREIGN KEY (vendorId) REFERENCES vendors (id)
+        );`
+      );
+
+      console.log("Migration 5 completed: quotes table added");
+      setSchemaVersion(5);
+    }
+
     // Future migrations can be added here
-    // if (currentVersion < 5) {
-    //   // Migration 5 code here
-    //   setSchemaVersion(5);
+    // if (currentVersion < 6) {
+    //   // Migration 6 code here
+    //   setSchemaVersion(6);
     // }
   } catch (error) {
     console.error("Error running migrations:", error);
@@ -894,27 +924,139 @@ export const updateUserPartnerDetails = async (
   partnerEmail?: string,
   isLinked?: boolean
 ): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    try {
-      console.log(
-        "Updating partner details for user:",
+  try {
+    db.runSync(
+      `UPDATE users 
+       SET partnerName = ?, partnerEmail = ?, isLinked = ?, updatedAt = CURRENT_TIMESTAMP 
+       WHERE id = ?`,
+      [partnerName || null, partnerEmail || null, isLinked ? 1 : 0, userId]
+    );
+  } catch (error) {
+    console.error("Error updating user partner details:", error);
+    throw error;
+  }
+};
+
+// Quote management functions
+export interface Quote {
+  id: string;
+  userId: string;
+  vendorId: string;
+  vendorName: string;
+  vendorAvatar?: string;
+  selectedPackage: string;
+  packageDetails: any;
+  selectedAddons?: any;
+  packageCost: number;
+  addonsCost: number;
+  gst: number;
+  totalCost: number;
+  eventDate?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const saveQuote = async (
+  userId: string,
+  vendorId: string,
+  vendorName: string,
+  vendorAvatar: string | undefined,
+  selectedPackage: string,
+  packageDetails: any,
+  selectedAddons: any,
+  packageCost: number,
+  addonsCost: number,
+  gst: number,
+  totalCost: number,
+  eventDate?: string
+): Promise<string> => {
+  try {
+    const quoteId = `quote_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+
+    db.runSync(
+      `INSERT INTO quotes (
+        id, userId, vendorId, vendorName, vendorAvatar, selectedPackage, 
+        packageDetails, selectedAddons, packageCost, addonsCost, gst, 
+        totalCost, eventDate
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        quoteId,
         userId,
-        "partnerName:",
-        partnerName,
-        "partnerEmail:",
-        partnerEmail,
-        "isLinked:",
-        isLinked
-      );
-      db.runSync(
-        `UPDATE users SET partnerName = ?, partnerEmail = ?, isLinked = ?, updatedAt = CURRENT_TIMESTAMP WHERE id = ?`,
-        [partnerName || null, partnerEmail || null, isLinked ? 1 : 0, userId]
-      );
-      console.log("Partner details updated successfully");
-      resolve();
-    } catch (error) {
-      console.error("Error updating partner details:", error);
-      reject(error);
-    }
-  });
+        vendorId,
+        vendorName,
+        vendorAvatar || null,
+        selectedPackage,
+        JSON.stringify(packageDetails),
+        JSON.stringify(selectedAddons),
+        packageCost,
+        addonsCost,
+        gst,
+        totalCost,
+        eventDate || null,
+      ]
+    );
+
+    return quoteId;
+  } catch (error) {
+    console.error("Error saving quote:", error);
+    throw error;
+  }
+};
+
+export const getUserQuotes = async (userId: string): Promise<Quote[]> => {
+  try {
+    const quotes = db.getAllSync(
+      `SELECT * FROM quotes WHERE userId = ? ORDER BY createdAt DESC`,
+      [userId]
+    ) as any[];
+
+    return quotes.map((quote) => ({
+      ...quote,
+      packageDetails: JSON.parse(quote.packageDetails),
+      selectedAddons: quote.selectedAddons
+        ? JSON.parse(quote.selectedAddons)
+        : null,
+    }));
+  } catch (error) {
+    console.error("Error getting user quotes:", error);
+    throw error;
+  }
+};
+
+export const getQuoteById = async (quoteId: string): Promise<Quote | null> => {
+  try {
+    const quote = db.getFirstSync(`SELECT * FROM quotes WHERE id = ?`, [
+      quoteId,
+    ]) as any;
+
+    if (!quote) return null;
+
+    return {
+      ...quote,
+      packageDetails: JSON.parse(quote.packageDetails),
+      selectedAddons: quote.selectedAddons
+        ? JSON.parse(quote.selectedAddons)
+        : null,
+    };
+  } catch (error) {
+    console.error("Error getting quote by ID:", error);
+    throw error;
+  }
+};
+
+export const deleteQuote = async (
+  quoteId: string,
+  userId: string
+): Promise<void> => {
+  try {
+    db.runSync(`DELETE FROM quotes WHERE id = ? AND userId = ?`, [
+      quoteId,
+      userId,
+    ]);
+  } catch (error) {
+    console.error("Error deleting quote:", error);
+    throw error;
+  }
 };
