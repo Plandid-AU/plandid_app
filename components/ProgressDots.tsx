@@ -15,6 +15,7 @@ const createStyles = (theme: any) =>
       justifyContent: "center",
       alignItems: "center",
       gap: rs(8),
+      marginBottom: rs(8),
     },
     dot: {
       height: rs(8),

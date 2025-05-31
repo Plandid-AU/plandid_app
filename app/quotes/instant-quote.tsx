@@ -7,17 +7,26 @@ import { useQuotesStore } from "@/stores/quotesStore";
 import { useUserStore } from "@/stores/userStore";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Image,
-  Platform,
+  SafeAreaView,
   ScrollView,
+  Share,
   StatusBar,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 
 interface Package {
   id: string;
@@ -40,10 +49,6 @@ const createStyles = (theme: any) =>
       flex: 1,
       backgroundColor: theme.colors.backgroundPrimary,
     },
-    statusBarBackground: {
-      height: StatusBar.currentHeight || (Platform.OS === "ios" ? rh(44) : 0),
-      backgroundColor: theme.colors.backgroundPrimary,
-    },
     header: {
       flexDirection: "row",
       alignItems: "center",
@@ -60,7 +65,7 @@ const createStyles = (theme: any) =>
     content: {
       flex: 1,
       paddingHorizontal: theme.spacing["5xl"],
-      paddingBottom: theme.spacing["3xl"],
+      paddingBottom: rh(120),
     },
     titleContainer: {
       paddingVertical: theme.spacing["4xl"],
@@ -93,6 +98,9 @@ const createStyles = (theme: any) =>
       borderWidth: 2,
     },
     packageHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
       padding: theme.spacing["4xl"],
       gap: theme.spacing["xl"],
     },
@@ -116,13 +124,18 @@ const createStyles = (theme: any) =>
       marginHorizontal: theme.spacing["4xl"],
     },
     featuresContainer: {
+      overflow: "hidden",
+    },
+    featuresContent: {
       padding: theme.spacing["4xl"],
       gap: theme.spacing["3xl"],
     },
     featureRow: {
       flexDirection: "row",
-      alignItems: "center",
+      alignItems: "flex-start",
       gap: theme.spacing["2xl"],
+      minHeight: rs(24),
+      paddingVertical: theme.spacing["xs"],
     },
     featureText: {
       fontFamily: "Inter",
@@ -131,6 +144,7 @@ const createStyles = (theme: any) =>
       lineHeight: rf(14) * 1.43,
       color: theme.colors.textPrimary,
       flex: 1,
+      flexWrap: "wrap",
     },
     addonCard: {
       flexDirection: "row",
@@ -175,14 +189,25 @@ const createStyles = (theme: any) =>
       borderColor: theme.colors.primary,
     },
     footer: {
-      padding: theme.spacing["5xl"],
-      gap: theme.spacing["5xl"],
+      position: "absolute",
+      bottom: 0,
+      left: 0,
+      right: 0,
+      padding: theme.spacing["4xl"],
+      paddingTop: theme.spacing["2xl"],
+      gap: theme.spacing["3xl"],
       backgroundColor: theme.colors.backgroundPrimary,
       borderTopWidth: 1,
       borderTopColor: theme.colors.borderLight,
+      zIndex: 1000,
+    },
+    footerActions: {
+      flexDirection: "row",
+      gap: theme.spacing["2xl"],
     },
     nextButton: {
-      height: rh(40),
+      flex: 1,
+      height: rh(48),
       justifyContent: "center",
       alignItems: "center",
       backgroundColor: theme.colors.primary,
@@ -191,11 +216,12 @@ const createStyles = (theme: any) =>
     nextButtonText: {
       fontFamily: "Inter",
       fontWeight: "600",
-      fontSize: rf(12),
+      fontSize: rf(14),
       color: theme.colors.backgroundPrimary,
     },
     doneButton: {
-      height: rh(40),
+      flex: 1,
+      height: rh(48),
       justifyContent: "center",
       alignItems: "center",
       backgroundColor: theme.colors.primary,
@@ -204,8 +230,24 @@ const createStyles = (theme: any) =>
     doneButtonText: {
       fontFamily: "Inter",
       fontWeight: "600",
-      fontSize: rf(12),
+      fontSize: rf(14),
       color: theme.colors.backgroundPrimary,
+    },
+    shareButton: {
+      flex: 1,
+      height: rh(48),
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: theme.colors.backgroundSecondary,
+      borderRadius: theme.borderRadius.lg,
+      borderWidth: 1,
+      borderColor: theme.colors.borderLight,
+    },
+    shareButtonText: {
+      fontFamily: "Inter",
+      fontWeight: "600",
+      fontSize: rf(14),
+      color: theme.colors.textPrimary,
     },
     quoteResultCard: {
       backgroundColor: theme.colors.backgroundPrimary,
@@ -363,7 +405,202 @@ const createStyles = (theme: any) =>
       color: theme.colors.textMuted,
       paddingLeft: theme.spacing["2xl"],
     },
+    loadingContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      paddingHorizontal: theme.spacing["5xl"],
+    },
+    loadingContent: {
+      alignItems: "center",
+      gap: theme.spacing["4xl"],
+    },
+    loadingIcon: {
+      marginBottom: theme.spacing["2xl"],
+    },
+    loadingTitle: {
+      fontFamily: "Urbanist",
+      fontWeight: "800",
+      fontSize: rf(24),
+      lineHeight: rf(24) * 1.2,
+      color: theme.colors.textPrimary,
+      textAlign: "center",
+    },
+    loadingSubtitle: {
+      fontFamily: "Inter",
+      fontWeight: "500",
+      fontSize: rf(14),
+      lineHeight: rf(14) * 1.43,
+      color: theme.colors.textMuted,
+      textAlign: "center",
+      maxWidth: rs(280),
+    },
+    loadingSpinner: {
+      marginTop: theme.spacing["2xl"],
+    },
+    pulseContainer: {
+      width: rs(120),
+      height: rs(120),
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    pulseCircle: {
+      position: "absolute",
+      width: rs(120),
+      height: rs(120),
+      borderRadius: rs(60),
+      backgroundColor: theme.colors.primary,
+    },
+    loadingIconInner: {
+      zIndex: 1,
+    },
   });
+
+// Animated Package Component
+const AnimatedPackage: React.FC<{
+  pkg: Package;
+  isSelected: boolean;
+  onSelect: () => void;
+  animationValue: any;
+  theme: any;
+  styles: any;
+}> = ({ pkg, isSelected, onSelect, animationValue, theme, styles }) => {
+  // Use React refs to measure actual content height
+  const [expandedHeight, setExpandedHeight] = useState(0);
+
+  // Measure content height when features change
+  const onFeaturesLayout = (event: any) => {
+    const { height } = event.nativeEvent.layout;
+    setExpandedHeight(height);
+  };
+
+  const animatedStyle = useAnimatedStyle(() => {
+    const animationProgress = animationValue.value || 0;
+    const targetHeight = animationProgress === 1 ? expandedHeight : 0;
+    return {
+      height: withTiming(targetHeight, {
+        duration: 300,
+      }),
+      opacity: withTiming(animationProgress, {
+        duration: 300,
+      }),
+    };
+  });
+
+  const dividerAnimatedStyle = useAnimatedStyle(() => {
+    const animationProgress = animationValue.value || 0;
+    return {
+      opacity: withTiming(animationProgress, {
+        duration: 300,
+      }),
+    };
+  });
+
+  return (
+    <TouchableOpacity
+      style={[styles.packageCard, isSelected && styles.packageCardSelected]}
+      onPress={onSelect}
+    >
+      <View style={styles.packageHeader}>
+        <View style={{ flex: 1 }}>
+          <ThemedText style={styles.packageName}>{pkg.name}</ThemedText>
+          {pkg.isPopular && (
+            <ThemedText style={styles.popularBadge}>Most Popular</ThemedText>
+          )}
+        </View>
+        <ThemedText style={styles.packagePrice}>
+          ${pkg.price.toFixed(0)}
+        </ThemedText>
+      </View>
+
+      {/* Always render the divider and features, but animate their visibility */}
+      <Animated.View style={dividerAnimatedStyle}>
+        <View style={styles.divider} />
+      </Animated.View>
+
+      <Animated.View style={[styles.featuresContainer, animatedStyle]}>
+        <View style={styles.featuresContent} onLayout={onFeaturesLayout}>
+          {pkg.features.map((feature, index) => (
+            <View key={index} style={styles.featureRow}>
+              <Ionicons
+                name="checkmark"
+                size={rf(14)}
+                color={theme.colors.primary}
+              />
+              <ThemedText style={styles.featureText}>{feature}</ThemedText>
+            </View>
+          ))}
+        </View>
+      </Animated.View>
+    </TouchableOpacity>
+  );
+};
+
+// Animated Loading Component
+const LoadingAnimation: React.FC<{
+  theme: any;
+  styles: any;
+}> = ({ theme, styles }) => {
+  const pulseScale = useSharedValue(1);
+  const pulseOpacity = useSharedValue(0.3);
+
+  useEffect(() => {
+    pulseScale.value = withRepeat(
+      withSequence(
+        withTiming(1.2, { duration: 1000 }),
+        withTiming(1, { duration: 1000 })
+      ),
+      -1,
+      true
+    );
+
+    pulseOpacity.value = withRepeat(
+      withSequence(
+        withTiming(0.6, { duration: 1000 }),
+        withTiming(0.3, { duration: 1000 })
+      ),
+      -1,
+      true
+    );
+  }, [pulseScale, pulseOpacity]);
+
+  const pulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pulseScale.value }],
+    opacity: pulseOpacity.value,
+  }));
+
+  return (
+    <View style={styles.loadingContainer}>
+      <View style={styles.loadingContent}>
+        <View style={styles.pulseContainer}>
+          <Animated.View style={[styles.pulseCircle, pulseStyle]} />
+          <View style={styles.loadingIconInner}>
+            <Ionicons
+              name="calculator-outline"
+              size={rf(48)}
+              color={theme.colors.backgroundPrimary}
+            />
+          </View>
+        </View>
+
+        <View>
+          <ThemedText style={styles.loadingTitle}>
+            Plandid is retrieving your quote
+          </ThemedText>
+          <ThemedText style={styles.loadingSubtitle}>
+            We&apos;re calculating the best pricing for your special day...
+          </ThemedText>
+        </View>
+
+        <ActivityIndicator
+          size="large"
+          color={theme.colors.primary}
+          style={styles.loadingSpinner}
+        />
+      </View>
+    </View>
+  );
+};
 
 export default function InstantQuoteScreen() {
   const { vendorId } = useLocalSearchParams();
@@ -377,14 +614,27 @@ export default function InstantQuoteScreen() {
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [selectedAddons, setSelectedAddons] = useState<Addon[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isProcessingQuote, setIsProcessingQuote] = useState(false);
+  const [showQuoteResult, setShowQuoteResult] = useState(false);
 
-  // Get vendor data
-  const vendor = mockVendors.find((v) => v.id === vendorId);
+  // Individual animation values for each package for better reactivity
+  const standardAnimation = useSharedValue(0);
+  const premiumAnimation = useSharedValue(0);
+  const exclusiveAnimation = useSharedValue(0);
 
-  if (!vendor) {
-    router.back();
-    return null;
-  }
+  // Animation mapping
+  const getAnimationValue = (packageId: string) => {
+    switch (packageId) {
+      case "standard":
+        return standardAnimation;
+      case "premium":
+        return premiumAnimation;
+      case "exclusive":
+        return exclusiveAnimation;
+      default:
+        return standardAnimation;
+    }
+  };
 
   // Mock package data - in a real app, this would come from the vendor's database
   const packages: Package[] = [
@@ -458,6 +708,14 @@ export default function InstantQuoteScreen() {
     },
   ];
 
+  // Get vendor data
+  const vendor = mockVendors.find((v) => v.id === vendorId);
+
+  if (!vendor) {
+    router.back();
+    return null;
+  }
+
   const handleNext = () => {
     if (currentStep === 0 && !selectedPackage) {
       Alert.alert(
@@ -466,7 +724,47 @@ export default function InstantQuoteScreen() {
       );
       return;
     }
-    setCurrentStep(currentStep + 1);
+
+    if (currentStep === 1) {
+      // After add-on selection, start the processing animation
+      setIsProcessingQuote(true);
+
+      // Simulate processing time (2-3 seconds)
+      setTimeout(() => {
+        setIsProcessingQuote(false);
+        setShowQuoteResult(true);
+      }, 2500);
+    } else {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handleBack = () => {
+    if (showQuoteResult) {
+      // If we're on the quote result, go back to addon selection
+      setShowQuoteResult(false);
+      setCurrentStep(1);
+    } else if (isProcessingQuote) {
+      // If processing, go back to addon selection
+      setIsProcessingQuote(false);
+      setCurrentStep(1);
+    } else if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    } else {
+      router.back();
+    }
+  };
+
+  const handlePackageSelect = (pkg: Package) => {
+    setSelectedPackage(pkg);
+
+    // Reset all animations first
+    standardAnimation.value = 0;
+    premiumAnimation.value = 0;
+    exclusiveAnimation.value = 0;
+
+    // Then set the selected package to expand
+    getAnimationValue(pkg.id).value = 1;
   };
 
   const handleAddonToggle = (addon: Addon) => {
@@ -488,6 +786,35 @@ export default function InstantQuoteScreen() {
     const total = subtotal + gst;
 
     return { packageCost, addonsCost, gst, total };
+  };
+
+  const handleShare = async () => {
+    if (!selectedPackage || !vendor) return;
+
+    try {
+      const { packageCost, addonsCost, total } = calculateCosts();
+
+      let shareContent = `Quote from ${vendor.name}\n\n`;
+      shareContent += `Package: ${
+        selectedPackage.name
+      } - $${packageCost.toFixed(2)}\n`;
+
+      if (selectedAddons.length > 0) {
+        shareContent += `Add-ons: $${addonsCost.toFixed(2)}\n`;
+        selectedAddons.forEach((addon) => {
+          shareContent += `- ${addon.name}\n`;
+        });
+      }
+
+      shareContent += `\nTotal: $${total.toFixed(2)} AUD\n`;
+      shareContent += `\nGenerated with Plandid - Your Wedding Planning Assistant`;
+
+      await Share.share({
+        message: shareContent,
+      });
+    } catch {
+      Alert.alert("Error", "Failed to share quote");
+    }
   };
 
   const handleDone = async () => {
@@ -534,38 +861,21 @@ export default function InstantQuoteScreen() {
         </ThemedText>
       </View>
 
-      {packages.map((pkg) => (
-        <TouchableOpacity
-          key={pkg.id}
-          style={[
-            styles.packageCard,
-            selectedPackage?.id === pkg.id && styles.packageCardSelected,
-          ]}
-          onPress={() => setSelectedPackage(pkg)}
-        >
-          <View style={styles.packageHeader}>
-            <ThemedText style={styles.packageName}>{pkg.name}</ThemedText>
-            {pkg.isPopular && (
-              <ThemedText style={styles.popularBadge}>Most Popular</ThemedText>
-            )}
-          </View>
+      {packages.map((pkg) => {
+        const isSelected = selectedPackage?.id === pkg.id;
 
-          <View style={styles.divider} />
-
-          <View style={styles.featuresContainer}>
-            {pkg.features.map((feature, index) => (
-              <View key={index} style={styles.featureRow}>
-                <Ionicons
-                  name="checkmark"
-                  size={rf(14)}
-                  color={theme.colors.primary}
-                />
-                <ThemedText style={styles.featureText}>{feature}</ThemedText>
-              </View>
-            ))}
-          </View>
-        </TouchableOpacity>
-      ))}
+        return (
+          <AnimatedPackage
+            key={pkg.id}
+            pkg={pkg}
+            isSelected={isSelected}
+            onSelect={() => handlePackageSelect(pkg)}
+            animationValue={getAnimationValue(pkg.id)}
+            theme={theme}
+            styles={styles}
+          />
+        );
+      })}
     </ScrollView>
   );
 
@@ -762,19 +1072,15 @@ export default function InstantQuoteScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <StatusBar
         barStyle="dark-content"
         backgroundColor={theme.colors.backgroundPrimary}
       />
-      <View style={styles.statusBarBackground} />
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <Ionicons
             name="chevron-back"
             size={rf(20)}
@@ -785,31 +1091,57 @@ export default function InstantQuoteScreen() {
 
       {/* Content */}
       <View style={styles.content}>
-        {currentStep === 0 && renderPackageSelection()}
-        {currentStep === 1 && renderAddonSelection()}
-        {currentStep === 2 && renderQuoteResult()}
+        {!isProcessingQuote &&
+          !showQuoteResult &&
+          currentStep === 0 &&
+          renderPackageSelection()}
+        {!isProcessingQuote &&
+          !showQuoteResult &&
+          currentStep === 1 &&
+          renderAddonSelection()}
+        {isProcessingQuote && (
+          <LoadingAnimation theme={theme} styles={styles} />
+        )}
+        {showQuoteResult && renderQuoteResult()}
       </View>
 
       {/* Footer */}
-      <View style={styles.footer}>
-        <ProgressDots currentStep={currentStep} totalSteps={3} />
+      {!isProcessingQuote && (
+        <View style={styles.footer}>
+          <ProgressDots
+            currentStep={showQuoteResult ? 2 : currentStep}
+            totalSteps={2}
+          />
 
-        {currentStep < 2 ? (
-          <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-            <ThemedText style={styles.nextButtonText}>Next</ThemedText>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={styles.doneButton}
-            onPress={handleDone}
-            disabled={isLoading}
-          >
-            <ThemedText style={styles.doneButtonText}>
-              {isLoading ? "Saving..." : "Done"}
-            </ThemedText>
-          </TouchableOpacity>
-        )}
-      </View>
-    </View>
+          {!showQuoteResult ? (
+            <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+              <ThemedText style={styles.nextButtonText}>
+                {currentStep === 1 ? "Get Quote" : "Next"}
+              </ThemedText>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.footerActions}>
+              <TouchableOpacity
+                style={styles.shareButton}
+                onPress={handleShare}
+              >
+                <ThemedText style={styles.shareButtonText}>
+                  Share Quote
+                </ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.doneButton}
+                onPress={handleDone}
+                disabled={isLoading}
+              >
+                <ThemedText style={styles.doneButtonText}>
+                  {isLoading ? "Saving..." : "Done"}
+                </ThemedText>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      )}
+    </SafeAreaView>
   );
 }
