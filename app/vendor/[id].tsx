@@ -92,7 +92,7 @@ export default function VendorDetailsScreen() {
     } else {
       Alert.alert(
         "Instant Quote",
-        "This vendor doesn&apos;t offer instant quotes. Please contact them directly for a quote."
+        "This vendor doesn't offer instant quotes. Please contact them directly for a quote."
       );
     }
   };
