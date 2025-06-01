@@ -155,8 +155,15 @@ export default function FavouritesScreen() {
   };
 
   const handleContact = () => {
+    if (!selectedVendor) return;
+
     handleCloseModal();
-    Alert.alert("Contact", "Messaging feature coming soon!");
+
+    // Navigate to messaging flow for the selected vendor
+    router.push({
+      pathname: "/messaging/[vendorId]",
+      params: { vendorId: selectedVendor.id },
+    });
   };
 
   const handleShare = async () => {
