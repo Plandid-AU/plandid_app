@@ -234,8 +234,13 @@ export default function FavouritesScreen() {
   };
 
   const handleReport = () => {
+    if (!selectedVendor) return;
+
     handleCloseModal();
-    Alert.alert("Report Vendor", "Report feature coming soon!");
+    router.push({
+      pathname: "/report/[vendorId]",
+      params: { vendorId: selectedVendor.id },
+    });
   };
 
   const renderVendorCard = ({

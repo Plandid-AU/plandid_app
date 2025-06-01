@@ -120,8 +120,10 @@ export default function VendorDetailsScreen() {
   };
 
   const handleReport = () => {
-    // TODO: Implement report vendor functionality
-    Alert.alert("Report Vendor", "Report functionality coming soon!");
+    router.push({
+      pathname: "/report/[vendorId]",
+      params: { vendorId: vendor.id },
+    });
   };
 
   const toggleReviewExpanded = (reviewId: string) => {
