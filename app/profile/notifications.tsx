@@ -47,30 +47,39 @@ const createStyles = (theme: any) =>
       backgroundColor: theme.colors.backgroundPrimary,
     },
     header: {
-      paddingHorizontal: theme.spacing["5xl"],
-      paddingVertical: theme.spacing["2xl"],
       flexDirection: "row",
       alignItems: "center",
+      paddingHorizontal: theme.spacing["5xl"],
+      paddingVertical: theme.spacing["2xl"],
       gap: theme.spacing["2xl"],
     },
     backButton: {
       padding: theme.spacing.sm,
     },
     backIcon: {
-      width: rs(12),
-      height: rs(12),
+      width: 12,
+      height: 12,
       borderTopWidth: 2,
       borderLeftWidth: 2,
-      borderColor: theme.colors.black,
+      borderColor: theme.colors.primary,
       transform: [{ rotate: "-45deg" }],
     },
-    textSection: {
+    scrollContainer: {
+      flex: 1,
+    },
+    content: {
+      flex: 1,
       paddingHorizontal: theme.spacing["5xl"],
-      paddingTop: theme.spacing["2xl"],
+      paddingBottom: theme.spacing["5xl"],
+    },
+    titleSection: {
       gap: theme.spacing.base,
+      paddingVertical: theme.spacing["2xl"],
+    },
+    subtitle: {
+      color: theme.colors.textMuted,
     },
     enableButtonContainer: {
-      paddingHorizontal: theme.spacing["5xl"],
       paddingTop: theme.spacing["4xl"],
       paddingBottom: theme.spacing.base,
     },
@@ -89,7 +98,6 @@ const createStyles = (theme: any) =>
       height: rs(14),
     },
     settingsContainer: {
-      paddingHorizontal: theme.spacing["5xl"],
       paddingTop: theme.spacing["3xl"],
       paddingBottom: theme.spacing["4xl"],
     },
@@ -212,115 +220,100 @@ export default function NotificationsScreen() {
         </Pressable>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Title and Description Section */}
-        <View style={styles.textSection}>
-          <ThemedText
-            type="h3"
-            style={{
-              fontFamily: "Urbanist",
-              fontWeight: "800",
-              fontSize: rs(24),
-              lineHeight: rs(24) * 1.2,
-              letterSpacing: rs(24) * 0.01,
-              color: theme.colors.textPrimary,
-            }}
-          >
-            Notifications
-          </ThemedText>
-          <ThemedText
-            type="caption"
-            style={{
-              fontFamily: "Inter",
-              fontWeight: "500",
-              fontSize: rs(12),
-              lineHeight: rs(12) * 1.33,
-              letterSpacing: rs(12) * 0.01,
-              color: theme.colors.textMuted,
-            }}
-          >
-            Choose what you want to be notified on
-          </ThemedText>
-        </View>
-
-        {/* Enable Notifications Button - Only show if permissions not granted */}
-        {!permissionGranted && (
-          <View style={styles.enableButtonContainer}>
-            <Pressable
-              style={styles.enableButton}
-              onPress={handleEnableNotifications}
-            >
-              <BellRingIcon />
-              <ThemedText
-                type="body"
-                style={{
-                  fontFamily: "Inter",
-                  fontWeight: "600",
-                  fontSize: rs(12),
-                  lineHeight: rs(12) * 1.21,
-                  color: theme.colors.white,
-                }}
-              >
-                Enable Notification
-              </ThemedText>
-            </Pressable>
+      <ScrollView
+        style={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.content}>
+          {/* Title Section */}
+          <View style={styles.titleSection}>
+            <ThemedText type="h3">Notifications</ThemedText>
+            <ThemedText type="caption" style={styles.subtitle}>
+              Choose what you want to be notified on
+            </ThemedText>
           </View>
-        )}
 
-        {/* Settings List */}
-        <View style={styles.settingsContainer}>
-          {notificationOptions.map((option, index) => (
-            <View key={option.id}>
-              <View style={styles.settingItem}>
-                <View style={styles.settingContent}>
-                  <ThemedText
-                    type="body"
-                    style={{
-                      fontFamily: "Urbanist",
-                      fontWeight: "700",
-                      fontSize: rs(14),
-                      lineHeight: rs(14) * 1.2,
-                      color: theme.colors.textPrimary,
-                    }}
-                  >
-                    {option.title}
-                  </ThemedText>
-                  <ThemedText
-                    type="caption"
-                    style={{
-                      fontFamily: "Inter",
-                      fontWeight: "500",
-                      fontSize: rs(12),
-                      lineHeight: rs(12) * 1.33,
-                      letterSpacing: rs(12) * 0.01,
-                      color: theme.colors.textMuted,
-                    }}
-                  >
-                    {option.description}
-                  </ThemedText>
-                </View>
-                <Switch
-                  value={localSettings[option.id as keyof typeof localSettings]}
-                  onValueChange={(value) =>
-                    handleToggleSetting(
-                      option.id as keyof typeof settings,
-                      value
-                    )
-                  }
-                  trackColor={{
-                    false: theme.colors.gray500,
-                    true: theme.colors.primary,
+          {/* Enable Notifications Button - Only show if permissions not granted */}
+          {!permissionGranted && (
+            <View style={styles.enableButtonContainer}>
+              <Pressable
+                style={styles.enableButton}
+                onPress={handleEnableNotifications}
+              >
+                <BellRingIcon />
+                <ThemedText
+                  type="body"
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: "600",
+                    fontSize: rs(12),
+                    lineHeight: rs(12) * 1.21,
+                    color: theme.colors.white,
                   }}
-                  thumbColor={theme.colors.white}
-                  style={styles.switch}
-                  disabled={isLoading}
-                />
-              </View>
-              {index < notificationOptions.length - 1 && (
-                <View style={styles.divider} />
-              )}
+                >
+                  Enable Notification
+                </ThemedText>
+              </Pressable>
             </View>
-          ))}
+          )}
+
+          {/* Settings List */}
+          <View style={styles.settingsContainer}>
+            {notificationOptions.map((option, index) => (
+              <View key={option.id}>
+                <View style={styles.settingItem}>
+                  <View style={styles.settingContent}>
+                    <ThemedText
+                      type="body"
+                      style={{
+                        fontFamily: "Urbanist",
+                        fontWeight: "700",
+                        fontSize: rs(14),
+                        lineHeight: rs(14) * 1.2,
+                        color: theme.colors.textPrimary,
+                      }}
+                    >
+                      {option.title}
+                    </ThemedText>
+                    <ThemedText
+                      type="caption"
+                      style={{
+                        fontFamily: "Inter",
+                        fontWeight: "500",
+                        fontSize: rs(12),
+                        lineHeight: rs(12) * 1.33,
+                        letterSpacing: rs(12) * 0.01,
+                        color: theme.colors.textMuted,
+                      }}
+                    >
+                      {option.description}
+                    </ThemedText>
+                  </View>
+                  <Switch
+                    value={
+                      localSettings[option.id as keyof typeof localSettings]
+                    }
+                    onValueChange={(value) =>
+                      handleToggleSetting(
+                        option.id as keyof typeof settings,
+                        value
+                      )
+                    }
+                    trackColor={{
+                      false: theme.colors.gray500,
+                      true: theme.colors.primary,
+                    }}
+                    thumbColor={theme.colors.white}
+                    style={styles.switch}
+                    disabled={isLoading}
+                  />
+                </View>
+                {index < notificationOptions.length - 1 && (
+                  <View style={styles.divider} />
+                )}
+              </View>
+            ))}
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>

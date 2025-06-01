@@ -9,10 +9,12 @@ import React, { useEffect, useState } from "react";
 import {
   Animated,
   Dimensions,
+  KeyboardAvoidingView,
   Modal,
   Platform,
+  Pressable,
+  SafeAreaView,
   ScrollView,
-  StatusBar,
   StyleSheet,
   TouchableOpacity,
   TouchableWithoutFeedback,
@@ -29,44 +31,37 @@ const createStyles = (theme: any) =>
       flex: 1,
       backgroundColor: theme.colors.backgroundPrimary,
     },
-    statusBarBackground: {
-      height: StatusBar.currentHeight || (Platform.OS === "ios" ? rh(44) : 0),
-      backgroundColor: theme.colors.backgroundPrimary,
-    },
     header: {
       flexDirection: "row",
       alignItems: "center",
       paddingHorizontal: theme.spacing["5xl"],
-      paddingVertical: theme.spacing["3xl"],
-      backgroundColor: theme.colors.backgroundPrimary,
+      paddingVertical: theme.spacing["2xl"],
+      gap: theme.spacing["2xl"],
     },
     backButton: {
-      width: rs(40),
-      height: rs(40),
-      justifyContent: "center",
-      alignItems: "center",
+      padding: theme.spacing.sm,
+    },
+    backIcon: {
+      width: 12,
+      height: 12,
+      borderTopWidth: 2,
+      borderLeftWidth: 2,
+      borderColor: theme.colors.primary,
+      transform: [{ rotate: "-45deg" }],
+    },
+    scrollContainer: {
+      flex: 1,
     },
     content: {
       flex: 1,
       paddingHorizontal: theme.spacing["5xl"],
-      paddingBottom: theme.spacing["3xl"],
+      paddingBottom: theme.spacing["5xl"],
     },
-    titleContainer: {
-      paddingVertical: theme.spacing["4xl"],
-      gap: theme.spacing["2xl"],
-    },
-    title: {
-      fontFamily: "Urbanist",
-      fontWeight: "800",
-      fontSize: rf(24),
-      lineHeight: rf(24) * 1.2,
-      color: theme.colors.textPrimary,
+    titleSection: {
+      gap: theme.spacing.base,
+      paddingVertical: theme.spacing["2xl"],
     },
     subtitle: {
-      fontFamily: "Inter",
-      fontWeight: "500",
-      fontSize: rf(12),
-      lineHeight: rf(12) * 1.33,
       color: theme.colors.textMuted,
     },
     emptyStateContainer: {
@@ -579,40 +574,37 @@ export default function MyQuotesScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={theme.colors.backgroundPrimary}
-      />
-      <View style={styles.statusBarBackground} />
-
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons
-            name="chevron-back"
-            size={rf(20)}
-            color={theme.colors.primary}
-          />
-        </TouchableOpacity>
-      </View>
-
-      {/* Content */}
-      <View style={styles.content}>
-        <View style={styles.titleContainer}>
-          <ThemedText style={styles.title}>My Quotes</ThemedText>
-          <ThemedText style={styles.subtitle}>
-            Where all your quotes lives
-          </ThemedText>
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <Pressable style={styles.backButton} onPress={() => router.back()}>
+            <View style={styles.backIcon} />
+          </Pressable>
         </View>
 
-        {quotes.length === 0 ? renderEmptyState() : renderQuotesList()}
-      </View>
+        <ScrollView
+          style={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.content}>
+            {/* Title Section */}
+            <View style={styles.titleSection}>
+              <ThemedText type="h3">My Quotes</ThemedText>
+              <ThemedText type="caption" style={styles.subtitle}>
+                Where all your quotes lives
+              </ThemedText>
+            </View>
 
-      {renderSortModal()}
-    </View>
+            {quotes.length === 0 ? renderEmptyState() : renderQuotesList()}
+          </View>
+        </ScrollView>
+
+        {renderSortModal()}
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
