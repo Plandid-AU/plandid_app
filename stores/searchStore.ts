@@ -13,7 +13,6 @@ export interface RecentSearch {
 interface SearchState {
   // Current search filters
   location: string | null;
-  date: string | null;
   service: string | null;
 
   // Recent searches
@@ -21,7 +20,6 @@ interface SearchState {
 
   // Actions
   setLocation: (location: string | null) => void;
-  setDate: (date: string | null) => void;
   setService: (service: string | null) => void;
   clearAll: () => void;
   addRecentSearch: (search: Omit<RecentSearch, "id" | "timestamp">) => void;
@@ -36,19 +34,16 @@ export const useSearchStore = create<SearchState>()(
     (set, get) => ({
       // Initial state
       location: null,
-      date: null,
       service: null,
       recentSearches: [],
 
       // Actions
       setLocation: (location) => set({ location }),
-      setDate: (date) => set({ date }),
       setService: (service) => set({ service }),
 
       clearAll: () =>
         set({
           location: null,
-          date: null,
           service: null,
         }),
 

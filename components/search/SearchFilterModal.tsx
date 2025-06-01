@@ -168,7 +168,7 @@ export const SearchFilterModal: React.FC<SearchFilterModalProps> = ({
         style={styles.primaryButton}
         onPress={() => {
           handleClose();
-          router.push("/profile");
+          router.push("/profile/wedding-details");
         }}
         activeOpacity={0.8}
       >

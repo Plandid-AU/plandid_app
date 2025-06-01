@@ -105,10 +105,10 @@ export default function SearchResultsScreen() {
 
   const handleSearchInfoPress = () => {
     // Set the current search parameters in the store for modification
-    const { setLocation, setDate, setService } = useSearchStore.getState();
+    const { setLocation, setService } = useSearchStore.getState();
     setLocation(location as string);
-    setDate(date as string);
     setService(service as string);
+    // Date is read-only and comes from user settings, so we don't set it in search store
 
     // Go back to the search page
     router.back();

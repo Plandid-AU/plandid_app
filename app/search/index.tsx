@@ -2,9 +2,10 @@ import { RecentSearchItem } from "@/components/search/RecentSearchItem";
 import { SearchFilterModal } from "@/components/search/SearchFilterModal";
 import { getLineHeight, rf, rs } from "@/constants/Responsive";
 import { RecentSearch, useSearchStore } from "@/stores/searchStore";
+import { useUserStore } from "@/stores/userStore";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Animated,
   SafeAreaView,
@@ -28,14 +29,41 @@ export default function SearchScreen() {
   // Get search state from store
   const {
     location,
-    date,
     service,
     recentSearches,
     setLocation,
-    setDate,
     setService,
     clearAll,
   } = useSearchStore();
+
+  // Get user data from store
+  const { user } = useUserStore();
+
+  // Get wedding date directly from user settings (read-only)
+  const weddingDate = user?.weddingDate
+    ? (user.weddingDate instanceof Date
+        ? user.weddingDate
+        : new Date(user.weddingDate)
+      ).toLocaleDateString("en-AU", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "Set in Profile";
+
+  // Initialize search filters with user's wedding details
+  const initializeDefaults = useCallback(() => {
+    if (user && user.weddingLocation) {
+      // Initialize location if not set, but date is always from user settings
+      if (!location) {
+        setLocation(user.weddingLocation);
+      }
+    }
+  }, [user, location, setLocation]);
+
+  useEffect(() => {
+    initializeDefaults();
+  }, [initializeDefaults]);
 
   useEffect(() => {
     // Animate in on mount
@@ -52,7 +80,7 @@ export default function SearchScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [fadeAnim, slideAnim]);
 
   const handleBack = () => {
     router.back();
@@ -64,17 +92,32 @@ export default function SearchScreen() {
       pathname: "/search/results",
       params: {
         location: location || "Flexible",
-        date: date || "I'm not sure",
+        date: weddingDate || "I'm not sure",
         service: service || "All",
       },
     });
   };
 
   const handleRecentSearchPress = (search: RecentSearch) => {
+    // Only restore location and service from recent search
+    // Date is always the current user's wedding date
     setLocation(search.location);
-    setDate(search.date);
     setService(search.service);
     handleSearch();
+  };
+
+  const handleClearAll = () => {
+    // Reset to user's wedding defaults instead of completely clearing
+    if (user && user.weddingLocation) {
+      setLocation(user.weddingLocation);
+      setService(null); // Clear service selection
+    } else {
+      clearAll();
+    }
+  };
+
+  const handleDatePress = () => {
+    setShowDateModal(true);
   };
 
   return (
@@ -118,11 +161,11 @@ export default function SearchScreen() {
           {/* Wedding Date */}
           <TouchableOpacity
             style={styles.filterItem}
-            onPress={() => setShowDateModal(true)}
+            onPress={handleDatePress}
             activeOpacity={0.7}
           >
             <Text style={styles.filterLabel}>Wedding Date</Text>
-            <Text style={styles.filterValue}>{date || "I'm not sure"}</Text>
+            <Text style={styles.filterValue}>{weddingDate}</Text>
           </TouchableOpacity>
 
           {/* Service */}
@@ -152,8 +195,8 @@ export default function SearchScreen() {
 
         {/* Bottom Bar */}
         <View style={styles.bottomBar}>
-          <TouchableOpacity onPress={clearAll} activeOpacity={0.7}>
-            <Text style={styles.clearAllText}>Clear All</Text>
+          <TouchableOpacity onPress={handleClearAll} activeOpacity={0.7}>
+            <Text style={styles.clearAllText}>Reset to Defaults</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -176,18 +219,19 @@ export default function SearchScreen() {
         onSelect={setLocation}
       />
       <SearchFilterModal
-        visible={showDateModal}
-        onClose={() => setShowDateModal(false)}
-        type="date"
-        value={date}
-        onSelect={setDate}
-      />
-      <SearchFilterModal
         visible={showServiceModal}
         onClose={() => setShowServiceModal(false)}
         type="service"
         value={service}
         onSelect={setService}
+      />
+
+      <SearchFilterModal
+        visible={showDateModal}
+        onClose={() => setShowDateModal(false)}
+        type="date"
+        value={weddingDate}
+        onSelect={() => {}} // No-op since date is read-only
       />
     </SafeAreaView>
   );
