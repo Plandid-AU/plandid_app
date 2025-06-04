@@ -6,18 +6,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useCallback, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Dimensions,
   FlatList,
-  Image,
   NativeScrollEvent,
   NativeSyntheticEvent,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import { Vendor } from "../types";
+import { CachedImage } from "./ui/CachedImage";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CARD_MARGIN = rs(32); // Responsive horizontal margin
@@ -228,39 +226,31 @@ export const VendorCard: React.FC<VendorCardProps> = ({ vendor, onPress }) => {
           style={styles.imageItem}
         >
           <View style={styles.imageWrapper}>
-            {!hasError ? (
-              <Image
-                key={`${item.id}_${item.url}`}
-                source={{
-                  uri: item.url,
-                  cache: "reload",
-                }}
-                style={styles.image}
-                resizeMode="cover"
-                onLoadStart={() => handleImageLoadStart(item.id)}
-                onLoad={() => handleImageLoad(item.id)}
-                onError={() => handleImageError(item.id)}
-              />
-            ) : (
-              <View style={[styles.image, styles.errorContainer]}>
-                <Ionicons
-                  name="image-outline"
-                  size={rf(50)}
-                  color={theme.colors.gray800}
-                />
-                <Text style={styles.errorText}>Image failed to load</Text>
-              </View>
-            )}
-            {isLoading && (
-              <View style={styles.loadingOverlay}>
-                <ActivityIndicator size="large" color={theme.colors.primary} />
-              </View>
-            )}
+            <CachedImage
+              key={`${item.id}_${item.url}`}
+              source={{ uri: item.url }}
+              style={styles.image}
+              resizeMode="cover"
+              showLoader={true}
+              loaderColor={theme.colors.primary}
+              fallbackText="Image failed to load"
+              onLoadStart={() => handleImageLoadStart(item.id)}
+              onLoad={() => handleImageLoad(item.id)}
+              onError={() => handleImageError(item.id)}
+            />
           </View>
         </TouchableOpacity>
       );
     },
-    [imageLoadingStates, imageErrorStates, onPress]
+    [
+      imageLoadingStates,
+      imageErrorStates,
+      onPress,
+      theme.colors.primary,
+      styles.image,
+      styles.imageItem,
+      styles.imageWrapper,
+    ]
   );
 
   return (

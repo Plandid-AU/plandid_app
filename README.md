@@ -67,6 +67,43 @@ In the output, you'll find options to open the app in a
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
+## Image Caching
+
+The app implements efficient image caching to improve performance and reduce server load:
+
+### Features
+
+- **Automatic Caching**: All remote images are automatically cached locally using `expo-file-system`
+- **Background Downloads**: Images are downloaded in the background while showing the original URL
+- **Cache Management**: Includes utilities for cache size monitoring and clearing
+- **Fallback Handling**: Graceful fallback to original URLs if caching fails
+
+### Components
+
+- **CachedImage**: Drop-in replacement for React Native's Image component with automatic caching
+- **Image Cache Utilities**: Located in `utils/imageCache.ts` for manual cache management
+
+### Usage
+
+```tsx
+import { CachedImage } from "@/components/ui/CachedImage";
+
+<CachedImage
+  source={{ uri: "https://example.com/image.jpg" }}
+  style={styles.image}
+  showLoader={true}
+  fallbackText="Failed to load"
+/>;
+```
+
+### Testing Image URLs
+
+Run the image URL validation script to ensure all mock data images are working:
+
+```bash
+node scripts/testImageUrls.js
+```
+
 ## Get a fresh project
 
 When you're ready, run:
@@ -103,5 +140,7 @@ The app requires the following permissions:
 
 - expo-image-picker
 - expo-document-picker
+- expo-file-system (for image caching)
 - @expo/vector-icons
 - react-native-reanimated
+- @react-native-async-storage/async-storage

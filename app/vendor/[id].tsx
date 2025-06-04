@@ -1,5 +1,6 @@
 import { ShareModal } from "@/components/ShareModal";
 import { SuperlikeButton } from "@/components/SuperlikeButton";
+import { CachedImage } from "@/components/ui/CachedImage";
 import { getLineHeight, rf, rh, rs } from "@/constants/Responsive";
 import { mockChats } from "@/data/mockChats";
 import { mockVendors } from "@/data/mockData";
@@ -12,10 +13,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Dimensions,
-  Image,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
@@ -154,49 +153,16 @@ export default function VendorDetailsScreen() {
     style: any,
     imageId?: string
   ) => {
-    const id = imageId || image.id;
-    const isLoading = imageLoadingStates[id];
-    const hasError = imageErrorStates[id];
-
-    if (hasError) {
-      return (
-        <View style={[style, styles.errorContainer]}>
-          <Ionicons name="image-outline" size={rf(50)} color="#999" />
-          <Text style={styles.errorText}>Image failed to load</Text>
-          {isLoading && (
-            <View style={styles.loadingOverlay}>
-              <ActivityIndicator size="large" color="#7B1513" />
-            </View>
-          )}
-        </View>
-      );
-    }
-
     return (
-      <View style={{ position: "relative" }}>
-        <Image
-          key={`${id}_${image.url || image.imageUrl}`}
-          source={{
-            uri: image.url || image.imageUrl,
-            cache: "reload",
-          }}
-          style={style}
-          resizeMode="cover"
-          onLoadStart={() => handleImageLoadStart(id)}
-          onLoad={() => handleImageLoad(id)}
-          onError={() => handleImageError(id)}
-        />
-        {isLoading && (
-          <View
-            style={[
-              styles.loadingOverlay,
-              { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
-            ]}
-          >
-            <ActivityIndicator size="large" color="#7B1513" />
-          </View>
-        )}
-      </View>
+      <CachedImage
+        key={`${imageId || image.id}_${image.url || image.imageUrl}`}
+        source={{ uri: image.url || image.imageUrl }}
+        style={style}
+        resizeMode="cover"
+        showLoader={true}
+        loaderColor="#7B1513"
+        fallbackText="Image failed to load"
+      />
     );
   };
 

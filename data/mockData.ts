@@ -40,7 +40,7 @@ const mockReviews: Review[] = [
     vendorId: "1",
     userId: "user2",
     userName: "Sarah",
-    userImage: `https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face&fm=jpg&q=80&t=${Date.now()}`,
+    userImage: `https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=100&h=100&fit=crop&crop=face&fm=jpg&q=80&t=${Date.now()}`,
     rating: 5,
     text: "Professional, creative, and so easy to work with. They made us feel comfortable throughout the entire day.",
     createdAt: new Date("2024-02-20"),
@@ -115,7 +115,7 @@ export const mockVendors: Vendor[] = [
         name: "Light and Airy",
         description:
           "Soft tones and bright highlights for a fresh, romantic feel",
-        imageUrl: `https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?w=200&h=200&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        imageUrl: `https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=200&h=200&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
         vendorId: "1",
       },
       {
@@ -148,7 +148,7 @@ export const mockVendors: Vendor[] = [
       },
       {
         id: "img4",
-        url: `https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        url: `https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
         vendorId: "1",
         order: 4,
       },
@@ -160,7 +160,7 @@ export const mockVendors: Vendor[] = [
       },
       {
         id: "img1b",
-        url: `https://images.unsplash.com/photo-1525258807787-8757f08c0f2c?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        url: `https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
         vendorId: "1",
         order: 6,
       },
@@ -230,7 +230,7 @@ export const mockVendors: Vendor[] = [
       },
       {
         id: "img2b",
-        url: `https://images.unsplash.com/photo-1556800440-57ad3da1251c?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        url: `https://images.unsplash.com/photo-1529636798458-92182e662485?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
         vendorId: "2",
         order: 5,
       },
@@ -274,7 +274,7 @@ export const mockVendors: Vendor[] = [
       },
       {
         id: "img9",
-        url: `https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        url: `https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
         vendorId: "3",
         order: 2,
       },
@@ -286,7 +286,7 @@ export const mockVendors: Vendor[] = [
       },
       {
         id: "img3b",
-        url: `https://images.unsplash.com/photo-1486591978090-58e04e6bb97a?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        url: `https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
         vendorId: "3",
         order: 4,
       },
@@ -320,7 +320,7 @@ export const mockVendors: Vendor[] = [
         id: "style7",
         name: "Cinematic Documentary",
         description: "Film-style storytelling of your wedding day",
-        imageUrl: `https://images.unsplash.com/photo-1478720568477-b956dc596103?w=200&h=200&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        imageUrl: `https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=200&h=200&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
         vendorId: "4",
       },
       {
@@ -372,7 +372,7 @@ export const mockVendors: Vendor[] = [
         id: "style9",
         name: "Hollywood Glamour",
         description: "Dramatic, movie-quality wedding films",
-        imageUrl: `https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=200&h=200&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        imageUrl: `https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=200&h=200&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
         vendorId: "5",
       },
     ],
@@ -385,7 +385,7 @@ export const mockVendors: Vendor[] = [
       },
       {
         id: "img14",
-        url: `https://images.unsplash.com/photo-1525258807787-8757f08c0f2c?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        url: `https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
         vendorId: "5",
         order: 2,
       },
@@ -439,7 +439,7 @@ export const mockVendors: Vendor[] = [
       },
       {
         id: "img17",
-        url: `https://images.unsplash.com/photo-1556800440-57ad3da1251c?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        url: `https://images.unsplash.com/photo-1529636798458-92182e662485?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
         vendorId: "6",
         order: 3,
       },
@@ -472,7 +472,7 @@ export const mockVendors: Vendor[] = [
     images: [
       {
         id: "img18",
-        url: `https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        url: `https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
         vendorId: "7",
         order: 1,
       },
@@ -597,20 +597,20 @@ export const mockVendors: Vendor[] = [
         id: "style15",
         name: "Rustic Romance",
         description: "Country-style wedding photography",
-        imageUrl: `https://images.unsplash.com/photo-1525258807787-8757f08c0f2c?w=200&h=200&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        imageUrl: `https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=200&h=200&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
         vendorId: "10",
       },
     ],
     images: [
       {
         id: "img24",
-        url: `https://images.unsplash.com/photo-1525258807787-8757f08c0f2c?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        url: `https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
         vendorId: "10",
         order: 1,
       },
       {
         id: "img25",
-        url: `https://images.unsplash.com/photo-1556800440-57ad3da1251c?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
+        url: `https://images.unsplash.com/photo-1529636798458-92182e662485?w=400&h=400&fit=crop&crop=faces&fm=jpg&q=80&t=${Date.now()}`,
         vendorId: "10",
         order: 2,
       },

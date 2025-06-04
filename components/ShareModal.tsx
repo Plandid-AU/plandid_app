@@ -7,7 +7,6 @@ import {
   Alert,
   Animated,
   Dimensions,
-  Image,
   Linking,
   Modal,
   Platform,
@@ -17,6 +16,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { CachedImage } from "./ui/CachedImage";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -389,7 +389,10 @@ export const ShareModal: React.FC<ShareModalProps> = ({
         {/* Image Preview */}
         <View style={styles.imagePreview}>
           {vendor?.avatar ? (
-            <Image source={{ uri: vendor.avatar }} style={styles.vendorImage} />
+            <CachedImage
+              source={{ uri: vendor.avatar }}
+              style={styles.vendorImage}
+            />
           ) : (
             <View style={styles.imageFallback}>
               <View style={styles.previewDots}>
