@@ -198,10 +198,58 @@ const runMigrations = () => {
       setSchemaVersion(5);
     }
 
+    // Migration 6: Remove deliveryTime column from vendors table
+    if (currentVersion < 6) {
+      console.log("Running migration 6: Removing deliveryTime column...");
+
+      // Check if vendors table exists and has deliveryTime column
+      const tableInfo = db.getAllSync(`PRAGMA table_info(vendors)`);
+      const hasDeliveryTimeColumn = tableInfo.some(
+        (column: any) => column.name === "deliveryTime"
+      );
+
+      if (hasDeliveryTimeColumn) {
+        // Create new vendors table without deliveryTime
+        db.execSync(
+          `CREATE TABLE IF NOT EXISTS vendors_new (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            category TEXT NOT NULL,
+            location TEXT NOT NULL,
+            tagline TEXT,
+            description TEXT,
+            rating REAL,
+            reviewCount INTEGER,
+            hasInstantQuote INTEGER,
+            hasAvailability INTEGER,
+            createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+          );`
+        );
+
+        // Copy data from old table to new table (excluding deliveryTime)
+        db.execSync(
+          `INSERT INTO vendors_new (id, name, category, location, tagline, description, rating, reviewCount, hasInstantQuote, hasAvailability, createdAt, updatedAt)
+           SELECT id, name, category, location, tagline, description, rating, reviewCount, hasInstantQuote, hasAvailability, createdAt, updatedAt
+           FROM vendors;`
+        );
+
+        // Drop old table and rename new table
+        db.execSync(`DROP TABLE vendors;`);
+        db.execSync(`ALTER TABLE vendors_new RENAME TO vendors;`);
+
+        console.log("Migration 6 completed: deliveryTime column removed");
+      } else {
+        console.log("Migration 6 skipped: deliveryTime column doesn't exist");
+      }
+
+      setSchemaVersion(6);
+    }
+
     // Future migrations can be added here
-    // if (currentVersion < 6) {
-    //   // Migration 6 code here
-    //   setSchemaVersion(6);
+    // if (currentVersion < 7) {
+    //   // Migration 7 code here
+    //   setSchemaVersion(7);
     // }
   } catch (error) {
     console.error("Error running migrations:", error);
@@ -238,7 +286,6 @@ export const initDatabase = () => {
           description TEXT,
           rating REAL,
           reviewCount INTEGER,
-          deliveryTime TEXT,
           hasInstantQuote INTEGER,
           hasAvailability INTEGER,
           createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -352,8 +399,8 @@ export const seedDatabase = async (vendors: Vendor[]) => {
           // Insert vendor
           db.runSync(
             `INSERT OR REPLACE INTO vendors 
-            (id, name, category, location, tagline, description, rating, reviewCount, deliveryTime, hasInstantQuote, hasAvailability)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            (id, name, category, location, tagline, description, rating, reviewCount, hasInstantQuote, hasAvailability)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               vendor.id,
               vendor.name,
@@ -363,7 +410,6 @@ export const seedDatabase = async (vendors: Vendor[]) => {
               vendor.description || null,
               vendor.rating || null,
               vendor.reviewCount || null,
-              vendor.deliveryTime || null,
               vendor.hasInstantQuote ? 1 : 0,
               vendor.hasAvailability ? 1 : 0,
             ]

@@ -60,7 +60,6 @@ export interface Vendor {
   description: string;
   rating: number;
   reviewCount: number;
-  deliveryTime: string;
   services: ServiceType[];
   styles: VendorStyle[];
   images: VendorImage[];

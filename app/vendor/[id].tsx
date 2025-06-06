@@ -353,19 +353,6 @@ export default function VendorDetailsScreen() {
 
           <View style={styles.divider} />
 
-          {/* Delivery Time Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitleLarge}>Delivery Time</Text>
-            <View style={styles.deliveryRow}>
-              <Ionicons name="send" size={rf(18)} color="#000000" />
-              <View style={styles.deliveryTextContainer}>
-                <Text style={styles.deliveryText}>{vendor.deliveryTime}</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.divider} />
-
           {/* Offerings Section */}
           <View style={styles.section}>
             <Text style={styles.sectionTitleLarge}>Offerings</Text>
@@ -760,24 +747,6 @@ const styles = StyleSheet.create({
     fontSize: rf(12),
     lineHeight: getLineHeight(rf(12), 1.2),
     color: "#000000",
-  },
-  deliveryRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: rs(12),
-    marginTop: rs(12),
-  },
-  deliveryText: {
-    fontFamily: Platform.OS === "ios" ? "System" : "Roboto",
-    fontWeight: "500",
-    fontSize: rf(12),
-    lineHeight: getLineHeight(rf(12), 1.33),
-    letterSpacing: 0.12,
-    color: "#000000",
-  },
-  deliveryTextContainer: {
-    flex: 1,
-    maxWidth: rs(250),
   },
   tagsContainer: {
     flexDirection: "row",

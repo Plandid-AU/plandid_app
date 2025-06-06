@@ -90,7 +90,6 @@ export const mockVendors: Vendor[] = [
       "Artful Lens is a wedding photography studio that captures the raw, emotional, and unforgettable moments of your special day with timeless elegance and artistic precision. Blending documentary-style storytelling with a fine art aesthetic, Artful Lens delivers deeply personal imagery that reflects the unique soul of every couple's love story. We believe wedding photography isn't just about taking pictures—it's about preserving the emotions, the laughter, the tears, and the unscripted moments that make your wedding uniquely yours.",
     rating: 4.76,
     reviewCount: 5,
-    deliveryTime: "All photos will be delivered within 6 weeks from shooting",
     services: [
       ServiceType.ENGAGEMENT_SHOOT,
       ServiceType.WEDDING_ALBUM,
@@ -180,7 +179,6 @@ export const mockVendors: Vendor[] = [
       "Specializing in romantic, sun-kissed wedding photography that tells your unique love story.",
     rating: 4.9,
     reviewCount: 12,
-    deliveryTime: "Photos delivered within 4 weeks",
     services: [
       ServiceType.ENGAGEMENT_SHOOT,
       ServiceType.WEDDING_ALBUM,
@@ -250,7 +248,6 @@ export const mockVendors: Vendor[] = [
       "Creating magical wedding memories through artistic photography.",
     rating: 4.8,
     reviewCount: 8,
-    deliveryTime: "5 weeks delivery time",
     services: [
       ServiceType.WEDDING_ALBUM,
       ServiceType.PRINTS,
@@ -308,7 +305,6 @@ export const mockVendors: Vendor[] = [
       "Award-winning wedding videography that captures every emotion.",
     rating: 4.95,
     reviewCount: 20,
-    deliveryTime: "Video delivered within 8 weeks",
     services: [
       ServiceType.ENGAGEMENT_SHOOT,
       ServiceType.SNEAK_PEAKS,
@@ -365,7 +361,6 @@ export const mockVendors: Vendor[] = [
     description: "Creating cinematic masterpieces of your special day.",
     rating: 4.7,
     reviewCount: 15,
-    deliveryTime: "10 weeks for full edit",
     services: [ServiceType.SNEAK_PEAKS, ServiceType.DRONE_PHOTOGRAPHY],
     styles: [
       {
@@ -406,7 +401,6 @@ export const mockVendors: Vendor[] = [
     description: "Professional content creation for your wedding social media.",
     rating: 4.85,
     reviewCount: 10,
-    deliveryTime: "Same-day social media content",
     services: [ServiceType.SNEAK_PEAKS, ServiceType.ENGAGEMENT_SHOOT],
     styles: [
       {
@@ -458,7 +452,6 @@ export const mockVendors: Vendor[] = [
     description: "Expert social media content creation for modern couples.",
     rating: 4.6,
     reviewCount: 6,
-    deliveryTime: "24-hour turnaround",
     services: [ServiceType.SNEAK_PEAKS],
     styles: [
       {
@@ -500,7 +493,6 @@ export const mockVendors: Vendor[] = [
       "Specializing in beach and sunset wedding photography in Perth.",
     rating: 4.8,
     reviewCount: 14,
-    deliveryTime: "5 weeks delivery",
     services: [
       ServiceType.ENGAGEMENT_SHOOT,
       ServiceType.WEDDING_ALBUM,
@@ -543,7 +535,6 @@ export const mockVendors: Vendor[] = [
     description: "Capturing the charm of Adelaide's wine country weddings.",
     rating: 4.9,
     reviewCount: 18,
-    deliveryTime: "4 weeks delivery",
     services: [
       ServiceType.WEDDING_ALBUM,
       ServiceType.PRINTS,
@@ -586,7 +577,6 @@ export const mockVendors: Vendor[] = [
     description: "Intimate wedding photography with a personal touch.",
     rating: 4.7,
     reviewCount: 9,
-    deliveryTime: "6 weeks delivery",
     services: [
       ServiceType.ENGAGEMENT_SHOOT,
       ServiceType.WEDDING_ALBUM,
